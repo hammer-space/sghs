@@ -1,0 +1,18 @@
+# Copy or this file to shothammer_config.ini and edit it appropriately
+# symlink it alongside shotgunEventDaemon.py since it will be read in that context
+[shothammer]
+# This is the name and key used to identify this plugin to Shotgrid.
+# Create one in Shotgrid via Admin->Scripts, Add Script
+# Name and Key must match or the plugin won't work
+SGHS_NAME = shothammer
+SGHS_KEY = yoursecretkeyfullofrandomcharacters
+# Full path to your shotgrid projects folder
+SGHS_PROJECT_PATH = H:/Projects/
+
+[test]
+# A Hammerspace mount you can test on
+HS_MOUNT = H:/
+TEST_FILE_NAME = testfile
+TEST_DIR_NAME = test_directory/
+TEST_TAG = TEST_TAG
+TEST_VALUE = test_value

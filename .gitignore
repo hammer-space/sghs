@@ -1,0 +1,4 @@
+*.pyc
+*.ini
+.idea
+__pycache__
