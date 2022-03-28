@@ -71,6 +71,7 @@ def shothammer(sg, logger, event, args):
     :param event:   EventLogEntry dictionary
     :param args:    Additional arguments passed
     """
+    # TODO: filter to the snowdrop2 (actual production job), uxbridge, testshow events
     # logger.info("%s" % str(event))
     logger.info(PP.pprint(event))
     logger.debug(project_name_from_event(event))
@@ -80,6 +81,7 @@ def shothammer(sg, logger, event, args):
         F.close()
 
     path = bootstrap_engine_to_shot_path(logger, event)
+    # TODO: Change to keywords
     add_tags(logger, event, path)
     remove_tags(logger, event, path)
 
@@ -113,22 +115,51 @@ def remove_tags(logger, event, path):
 
 
 def bootstrap_engine_to_shot_path(logger, event):
+    """
+    Get the shot_id from the event, and use that to bootstrap to a project-specific engine
+    that can access the template and configuration needed to return a full path to the shot
+
+    :param logger:
+    :param event:
+    :return:
+    """
     shot_id = event['entity']['id']
-    project_id = event['project']['id']
+    #project_id = event['project']['id']
+
+    # Use the existing sgtk auth user to get a manager
     manager = sgtk.bootstrap.ToolkitManager(sgtk.get_authenticated_user())
-    # This must be configured as an id for the appropriate per-project config
-    # This will let us select which config shothammer pulls per-project
+    # This plugin_id must be configured so we get the appropriate per-project config
     manager.plugin_id = "sghs."
     logger.debug("Manager object:\n%s" % str(manager))
-    logger.debug("Trying to bootstrap project ID %s" % project_id)
+
+    logger.debug("Trying to bootstrap shot ID %s" % shot_id)
     engine = manager.bootstrap_engine("tk-shell", entity={"type": "Shot", "id": shot_id})
     logger.debug("Engine object:\n%s" % str(engine))
+
+    # use the work_shot_area_template from the engine-specific sgtk
+    # TODO: figure out the name of the template we want and use that
     work_shot_area_template = engine.sgtk.templates["work_shot_area"]
-    episode_code = get_episode_code(event)
-    shot_code = get_shot_code(event)
-    result = work_shot_area_template.apply_fields({'Episode': episode_code,
-                                                   'Shot': shot_code,
+    print("work_shot_area_template: %s" % str(work_shot_area_template))
+
+    # set up filters and fields to pass to find_one so we get the right dict
+    filters = [["id", "is", shot_id]]
+    fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
+    full_shot = engine.shotgun.find_one("Shot", filters=filters, fields=fields)
+    print("Full shot: %s" % str(full_shot))
+    # TODO: logging.warn() if we can't get any of these and compose a full path
+    # TODO: pickle the event, save to disk, and state the filename in the ^^ log entry
+    Shot = full_shot['code']
+    Sequence = full_shot['sg_sequence']
+    Episode = full_shot['sg_episode']['name']
+
+    # compose a dict and feed it to apply_fields to get a path
+    result = work_shot_area_template.apply_fields({'Shot':Shot,
+                                                   'Sequence':Sequence,
+                                                   'Episode': Episode,
                                                    })
+    logger.info("Full path: %s" % result)
+
+    # clean up the engine before returning
     engine.destroy()
     return result
 
@@ -145,6 +176,7 @@ def hs_tag_set(path, tag, value, recursive=True) -> None:
     logging.debug(result.stderr)
 
 def hs_keyword_add(path, keyword, recursive=True) -> None:
+    # TODO: filter to the SGHS_* tag namespace
     if recursive:
         cmd = 'hs keyword add -r %s %s' % (keyword, path)
     else:
@@ -157,6 +189,7 @@ def hs_keyword_add(path, keyword, recursive=True) -> None:
     logging.debug(result.stderr)
 
 def hs_keyword_delete(path, keyword, recursive=True) -> None:
+    # TODO: filter to the SGHS_* tag namespace
     if recursive:
         cmd = 'hs keyword delete -r %s %s' % (keyword, path)
     else:
