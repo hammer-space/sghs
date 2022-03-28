@@ -81,7 +81,7 @@ def shothammer(sg, logger, event, args):
         F.close()
 
     path = bootstrap_engine_to_shot_path(logger, event)
-    # TODO: Change to keywords
+    # These functions take shotgrid tags and add/remove keywords to/from the path specified
     add_tags(logger, event, path)
     remove_tags(logger, event, path)
 
