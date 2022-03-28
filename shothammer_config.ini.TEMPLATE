@@ -6,8 +6,9 @@
 # Name and Key must match or the plugin won't work
 SGHS_NAME = shothammer
 SGHS_KEY = yoursecretkeyfullofrandomcharacters
-# Full path to your shotgrid projects folder
-SGHS_PROJECT_PATH = H:/Projects/
+# Set to true if you want to serialize and save events
+CAPTURE_LAST_EVENT = False
+LAST_EVENT_FILE = 'sghs_event.pickle'
 
 [test]
 # A Hammerspace mount you can test on

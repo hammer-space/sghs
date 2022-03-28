@@ -62,13 +62,6 @@ class TestShotHammerFileAccess(TestCase):
         print("TAG_VALUE:", tag_value)
         self.assertEqual(self.test_value, tag_value)
 
-    def test_path_from_project_name(self) -> None:
-        test_project = "awesome_project"
-        path = shothammer.config['shothammer']['SGHS_PROJECT_PATH']
-        expected_fullpath = os.path.join(path, test_project)
-        result = shothammer.path_from_project_name(test_project)
-        self.assertEqual(expected_fullpath, result)
-
     def test_hs_keyword_add_norecurse(self):
         shothammer.hs_keyword_add(self.testfilepath, self.test_keyword, recursive=False)
         cmd = 'hs keyword has %s %s' % (self.test_keyword, self.testfilepath)
@@ -100,6 +93,13 @@ class TestShotHammerEventProcessing(TestCase):
         target_episode_code = 'ep101'
         result_episode_code = shothammer.get_episode_code(self.event)
         self.assertEqual(result_episode_code, target_episode_code)
+
+    def test_capture_event(self):
+        test_pickle = 'shothammer_test.pickle'
+        shothammer.capture_event(self.event, test_pickle)
+        with open(test_pickle, 'rb') as F:
+            saved_event = pickle.load(F)
+        self.assertEqual(saved_event, self.event)
 
 
 class TestShotHammerBootstrapping(TestCase):

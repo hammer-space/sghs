@@ -29,10 +29,9 @@ user = sa.create_script_user(api_script=SGHS_NAME,
 sgtk.set_authenticated_user(user)
 # Now we are set up for bootstrapping the engine in various contexts, handled per-callback
 
-# Make this true if you want to serialize and capture the last event seen
-# TODO: Move this to the config file
-CAPTURE_LAST_EVENT = False
-LAST_EVENT_FILE = 'sghs_event.pickle'
+# Whether or not to capture the last event, and where to put it. Edit in shothammer_config.ini
+CAPTURE_LAST_EVENT = config['shothammer']['CAPTURE_LAST_EVENT']
+LAST_EVENT_FILE = config['shothammer']['LAST_EVENT_FILE']
 
 # global pretty printer
 PP = pprint.PrettyPrinter(indent=2)
@@ -75,16 +74,23 @@ def shothammer(sg, logger, event, args):
     # logger.info("%s" % str(event))
     logger.info(PP.pprint(event))
     logger.debug(project_name_from_event(event))
+
     if CAPTURE_LAST_EVENT:
-        F = open(LAST_EVENT_FILE, 'wb')
-        pickle.dump(event, F)
-        F.close()
+        capture_event(event, LAST_EVENT_FILE)
 
     path = bootstrap_engine_to_shot_path(logger, event)
     # These functions take shotgrid tags and add/remove keywords to/from the path specified
     add_tags(logger, event, path)
     remove_tags(logger, event, path)
 
+def capture_event(event, filename):
+    """
+    Save a pickle to the location specified in the .ini config
+    :param event:
+    :return:
+    """
+    with open(filename, 'wb') as F:
+        pickle.dump(event, F)
 
 def add_tags(logger, event, path):
     """
@@ -203,12 +209,6 @@ def hs_keyword_delete(path, keyword, recursive=True) -> None:
 
 def project_name_from_event(event) -> str:
     return event['project']['name']
-
-def path_from_project_name(project) -> str:
-    """
-    This is no longer valid, since the path needs to come from a bootstrapped engine
-    """
-    return os.path.join(config['shothammer']['SGHS_PROJECT_PATH'], project)
 
 def is_attribute_change(event) -> bool:
     return event['meta']['type'] == 'attribute_change'
