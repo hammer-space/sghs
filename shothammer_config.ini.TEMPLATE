@@ -9,6 +9,9 @@ SGHS_KEY = yoursecretkeyfullofrandomcharacters
 # Set to true if you want to serialize and save events
 CAPTURE_LAST_EVENT = False
 LAST_EVENT_FILE = sghs_event.pickle
+# The location of the python directory from a shotgun pipeline toolkit tk-core folder
+SG_TOOLKIT = C:/shotgrid-hammerspace/tk-core/python
+
 
 [test]
 # A Hammerspace mount you can test on

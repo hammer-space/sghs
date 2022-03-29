@@ -15,8 +15,7 @@ SGHS_NAME = config['shothammer']['SGHS_NAME']
 SGHS_KEY = config['shothammer']['SGHS_KEY']
 
 # Vanilla sgtk needed for auth so that we can get a context-specific engine
-# TODO: Move this into the config.ini
-sys.path.insert(0, "C:/shotgrid-hammerspace/tk-core/python")
+sys.path.insert(0, config['shothammer']['SG_TOOLKIT'])
 import sgtk
 import tank.errors
 
