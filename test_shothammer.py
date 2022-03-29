@@ -31,6 +31,7 @@ class TestShotHammerFileAccess(TestCase):
         self.test_tag = config['test']['TEST_TAG']
         self.test_value = config['test']['TEST_VALUE']
         self.test_keyword = config['test']['TEST_KEYWORD']
+        self.project_filter = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
 
     def setUp(self):
         # make a test file in the root of the mount
@@ -83,6 +84,34 @@ class TestShotHammerFileAccess(TestCase):
         self.assertEqual(retval, "TRUE")
 
 
+class TestShotHammerEventFilter(TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestShotHammerEventFilter, self).__init__(*args, **kwargs)
+        self.project_filter = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
+        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
+            self.event = pickle.load(F)
+        self.logger = logging.getLogger(__name__)
+
+    def test_event_filter_list(self):
+        print(self.project_filter)
+        self.assertEqual(shothammer.SGHS_PROJECTS, self.project_filter)
+
+    @patch('shothammer.remove_tags')
+    @patch('shothammer.add_tags')
+    @patch('shothammer.bootstrap_engine_to_shot_path')
+    def test_filtered_event_calls_bootstrap(self, mock_bootstrap, mock_add_tags, mock_remove_tags):
+        shothammer.SGHS_PROJECTS = [952, 122]
+        shothammer.shothammer(None, self.logger, self.event, None)
+        self.assertTrue(mock_bootstrap.called)
+
+    @patch('shothammer.remove_tags')
+    @patch('shothammer.add_tags')
+    @patch('shothammer.bootstrap_engine_to_shot_path')
+    def test_filtered_event_does_not_call_bootstrap(self, mock_bootstrap, mock_add_tags, mock_remove_tags):
+        shothammer.SGHS_PROJECTS = [100, 101]
+        shothammer.shothammer(None, self.logger, self.event, None)
+        self.assertFalse(mock_bootstrap.called)
+
 class TestShotHammerEventProcessing(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerEventProcessing, self).__init__(*args, **kwargs)
@@ -100,6 +129,13 @@ class TestShotHammerEventProcessing(TestCase):
         with open(test_pickle, 'rb') as F:
             saved_event = pickle.load(F)
         self.assertEqual(saved_event, self.event)
+
+    def test_get_project_id(self):
+        target_project_id = 952
+        result = shothammer.get_project_id(self.event)
+        self.assertEqual(result, target_project_id)
+
+
 
 
 class TestShotHammerBootstrapping(TestCase):

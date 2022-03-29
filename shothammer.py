@@ -13,6 +13,12 @@ config = configparser.ConfigParser()
 config.read('shothammer_config.ini')
 SGHS_NAME = config['shothammer']['SGHS_NAME']
 SGHS_KEY = config['shothammer']['SGHS_KEY']
+if config['shothammer']['SGHS_PROJECTS'] == '':
+    SGHS_PROJECTS = None
+else:
+    SGHS_PROJECTS = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
+
+print("Project filter: %s" % SGHS_PROJECTS)
 
 # Vanilla sgtk needed for auth so that we can get a context-specific engine
 sys.path.insert(0, config['shothammer']['SG_TOOLKIT'])
@@ -33,7 +39,7 @@ sgtk.set_authenticated_user(user)
 # Now we are set up for bootstrapping the engine in various contexts, handled per-callback
 
 # Whether or not to capture the last event, and where to put it. Edit in shothammer_config.ini
-CAPTURE_LAST_EVENT = config['shothammer']['CAPTURE_LAST_EVENT']
+CAPTURE_LAST_EVENT = config.getboolean('shothammer', 'CAPTURE_LAST_EVENT')
 LAST_EVENT_FILE = config['shothammer']['LAST_EVENT_FILE']
 
 # global pretty printer
@@ -76,15 +82,16 @@ def shothammer(sg, logger, event, args):
     :param event:   EventLogEntry dictionary
     :param args:    Additional arguments passed
     """
-    # TODO: filter to the snowdrop2 (actual production job), uxbridge, testshow events
-    # logger.info("%s" % str(event))
-    logger.info(PP.pprint(event))
+    logger.debug(PP.pprint(event))
     logger.debug(project_name_from_event(event))
 
     if CAPTURE_LAST_EVENT:
         capture_event(event, LAST_EVENT_FILE)
 
-    path = bootstrap_engine_to_shot_path(logger, event)
+    # only process events from projects in the allowed list
+    path = None
+    if get_project_id(event) in SGHS_PROJECTS:
+        path = bootstrap_engine_to_shot_path(logger, event)
 
     # These functions take shotgrid tags and add/remove keywords to/from the path specified
     # only if we got a real path
@@ -248,6 +255,9 @@ def is_attribute_change(event) -> bool:
 
 def get_shot_code(event):
     return event['entity']['name']
+
+def get_project_id(event):
+    return event['project']['id']
 
 # deprecated since we're pulling these from the bootstrapped engine context
 def get_episode_code(event):

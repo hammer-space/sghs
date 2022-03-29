@@ -11,6 +11,8 @@ CAPTURE_LAST_EVENT = False
 LAST_EVENT_FILE = sghs_event.pickle
 # The location of the python directory from a shotgun pipeline toolkit tk-core folder
 SG_TOOLKIT = C:/shotgrid-hammerspace/tk-core/python
+# Comma-separated list of project ids that we want to process. Leave blank for all projects.
+SGHS_PROJECTS =
 
 
 [test]
