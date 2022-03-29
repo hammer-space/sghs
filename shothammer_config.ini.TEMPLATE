@@ -13,7 +13,8 @@ LAST_EVENT_FILE = sghs_event.pickle
 SG_TOOLKIT = C:/shotgrid-hammerspace/tk-core/python
 # Comma-separated list of project ids that we want to process. Leave blank for all projects.
 SGHS_PROJECTS =
-
+# Tag prefix for filtering, only change if you have a namespace collision
+SGHS_TAG_NAMESPACE = SGHS_
 
 [test]
 # A Hammerspace mount you can test on
@@ -22,3 +23,5 @@ TEST_FILE_NAME = testfile
 TEST_DIR_NAME = test_directory/
 TEST_TAG = TEST_TAG
 TEST_VALUE = test_value
+# This must start with SGHS_ to get past the tag filter
+TEST_KEYWORD = SGHS_TEST_KEYWORD

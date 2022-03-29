@@ -17,6 +17,7 @@ if config['shothammer']['SGHS_PROJECTS'] == '':
     SGHS_PROJECTS = None
 else:
     SGHS_PROJECTS = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
+SGHS_TAG_NAMESPACE = config['shothammer']['SGHS_TAG_NAMESPACE']
 
 print("Project filter: %s" % SGHS_PROJECTS)
 
@@ -99,7 +100,7 @@ def shothammer(sg, logger, event, args):
         add_tags(logger, event, path)
         remove_tags(logger, event, path)
 
-def capture_event(event, filename):
+def capture_event(event, filename) -> None:
     """
     Save a pickle to the location specified in the .ini config
     :param event:
@@ -108,7 +109,7 @@ def capture_event(event, filename):
     with open(filename, 'wb') as F:
         pickle.dump(event, F)
 
-def add_tags(logger, event, path):
+def add_tags(logger, event, path) -> None:
     """
     Take list of added tags from Shotgrid event, add them as keywords recursively to the path specified
     :param logger:
@@ -122,7 +123,7 @@ def add_tags(logger, event, path):
         logger.info("Setting keyword %s on path %s" % (tag, path))
         hs_keyword_add(path, tag, recursive=True)
 
-def remove_tags(logger, event, path):
+def remove_tags(logger, event, path) -> None:
     """
     Take list of removed tags from Shotgrid event, remove the corresponding keywords directly on the path specified
     :param logger:
@@ -136,7 +137,7 @@ def remove_tags(logger, event, path):
         hs_keyword_delete(path, tag, recursive=True)
 
 
-def bootstrap_engine_to_shot_path(logger, event):
+def bootstrap_engine_to_shot_path(logger, event) -> str:
     """
     Get the shot_id from the event, and use that to bootstrap to a project-specific engine
     that can access the template and configuration needed to return a full path to the shot
@@ -222,7 +223,9 @@ def hs_tag_set(path, tag, value, recursive=True) -> None:
     logging.debug(result.stderr)
 
 def hs_keyword_add(path, keyword, recursive=True) -> None:
-    # TODO: filter to the SGHS_* tag namespace
+    if not keyword.startswith(SGHS_TAG_NAMESPACE):
+        logging.debug("tag %s not in namespace, skipping")
+        return
     if recursive:
         cmd = 'hs keyword add -r %s %s' % (keyword, path)
     else:
@@ -235,7 +238,9 @@ def hs_keyword_add(path, keyword, recursive=True) -> None:
     logging.debug(result.stderr)
 
 def hs_keyword_delete(path, keyword, recursive=True) -> None:
-    # TODO: filter to the SGHS_* tag namespace
+    if not keyword.startswith(SGHS_TAG_NAMESPACE):
+        logging.debug("tag %s not in namespace, skipping")
+        return
     if recursive:
         cmd = 'hs keyword delete -r %s %s' % (keyword, path)
     else:
@@ -253,7 +258,12 @@ def project_name_from_event(event) -> str:
 def is_attribute_change(event) -> bool:
     return event['meta']['type'] == 'attribute_change'
 
-def get_shot_code(event):
+def get_shot_code(event) -> str:
+    """
+    This isn't the shotid, but rather the full code including episode or sequence
+    :param event:
+    :return:
+    """
     return event['entity']['name']
 
 def get_project_id(event):

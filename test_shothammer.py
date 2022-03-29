@@ -83,6 +83,18 @@ class TestShotHammerFileAccess(TestCase):
         print("got %s" % retval)
         self.assertEqual(retval, "TRUE")
 
+    @patch('shothammer.subprocess.run')
+    def test_hs_keyword_add_filtered_tag(self, mock_subprocess_run):
+        shotgrid_tag = 'SGHS_IN_AZ'
+        shothammer.hs_keyword_add(self.testfilepath, shotgrid_tag)
+        self.assertTrue(mock_subprocess_run.called)
+
+    @patch('shothammer.subprocess.run')
+    def test_hs_keyword_dont_add_tag(self, mock_subprocess_run):
+        shotgrid_tag = 'FOO'
+        shothammer.hs_keyword_add(self.testfilepath, shotgrid_tag)
+        self.assertFalse(mock_subprocess_run.called)
+
 
 class TestShotHammerEventFilter(TestCase):
     def __init__(self, *args, **kwargs):
