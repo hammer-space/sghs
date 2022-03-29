@@ -8,7 +8,7 @@ SGHS_NAME = shothammer
 SGHS_KEY = yoursecretkeyfullofrandomcharacters
 # Set to true if you want to serialize and save events
 CAPTURE_LAST_EVENT = False
-LAST_EVENT_FILE = 'sghs_event.pickle'
+LAST_EVENT_FILE = sghs_event.pickle
 
 [test]
 # A Hammerspace mount you can test on

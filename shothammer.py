@@ -6,6 +6,8 @@ import pprint
 import configparser
 import pickle
 
+from datetime import datetime
+
 # Read config and set up global auth variables
 config = configparser.ConfigParser()
 config.read('shothammer_config.ini')
@@ -13,8 +15,10 @@ SGHS_NAME = config['shothammer']['SGHS_NAME']
 SGHS_KEY = config['shothammer']['SGHS_KEY']
 
 # Vanilla sgtk needed for auth so that we can get a context-specific engine
+# TODO: Move this into the config.ini
 sys.path.insert(0, "C:/shotgrid-hammerspace/tk-core/python")
 import sgtk
+import tank.errors
 
 # Initial sgtk auth
 sgtk.LogManager().initialize_custom_handler()
@@ -36,6 +40,9 @@ LAST_EVENT_FILE = config['shothammer']['LAST_EVENT_FILE']
 # global pretty printer
 PP = pprint.PrettyPrinter(indent=2)
 
+# Custom exception to catch tank.errors.TankError and raise it without a shotgrid config
+class TankError(Exception):
+    pass
 
 def registerCallbacks(reg):
     """
@@ -79,9 +86,12 @@ def shothammer(sg, logger, event, args):
         capture_event(event, LAST_EVENT_FILE)
 
     path = bootstrap_engine_to_shot_path(logger, event)
+
     # These functions take shotgrid tags and add/remove keywords to/from the path specified
-    add_tags(logger, event, path)
-    remove_tags(logger, event, path)
+    # only if we got a real path
+    if path:
+        add_tags(logger, event, path)
+        remove_tags(logger, event, path)
 
 def capture_event(event, filename):
     """
@@ -141,29 +151,53 @@ def bootstrap_engine_to_shot_path(logger, event):
     logger.debug("Trying to bootstrap shot ID %s" % shot_id)
     engine = manager.bootstrap_engine("tk-shell", entity={"type": "Shot", "id": shot_id})
     logger.debug("Engine object:\n%s" % str(engine))
+    # import now that we have bootstrapped an entity-specific sgtk
+    import tank.errors
 
     # use the work_shot_area_template from the engine-specific sgtk
     # TODO: figure out the name of the template we want and use that
     work_shot_area_template = engine.sgtk.templates["work_shot_area"]
-    print("work_shot_area_template: %s" % str(work_shot_area_template))
+    logger.debug("work_shot_area_template: %s" % str(work_shot_area_template))
 
     # set up filters and fields to pass to find_one so we get the right dict
     filters = [["id", "is", shot_id]]
     fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
     full_shot = engine.shotgun.find_one("Shot", filters=filters, fields=fields)
-    print("Full shot: %s" % str(full_shot))
-    # TODO: logging.warn() if we can't get any of these and compose a full path
-    # TODO: pickle the event, save to disk, and state the filename in the ^^ log entry
-    Shot = full_shot['code']
-    Sequence = full_shot['sg_sequence']
-    Episode = full_shot['sg_episode']['name']
+    logger.debug("Full shot: %s" % str(full_shot))
+
+    try:
+        Shot = full_shot['code']
+    except TypeError as e:
+        logger.warning("TypeError trying to get Shot from full_shot: %s" % repr(e))
+        Shot = None
+    try:
+        Sequence = full_shot['sg_sequence']
+    except TypeError as e:
+        logger.warning("TypeError trying to get Sequence from full_shot: %s" % repr(e))
+        Sequence = None
+    try:
+        Episode = full_shot['sg_episode']['name']
+    except TypeError as e:
+        logger.warning("TypeError trying to get Episode from full_shot: %s" % repr(e))
+        Episode = None
 
     # compose a dict and feed it to apply_fields to get a path
-    result = work_shot_area_template.apply_fields({'Shot':Shot,
-                                                   'Sequence':Sequence,
-                                                   'Episode': Episode,
-                                                   })
-    logger.info("Full path: %s" % result)
+    try:
+        result = work_shot_area_template.apply_fields({'Shot':Shot,
+                                                       'Sequence':Sequence,
+                                                       'Episode': Episode,
+                                                       })
+        logger.debug("Full path: %s" % result)
+    except tank.errors.TankError as e:
+        result = None
+        msg = str(e)
+        event_time = event['created_at']
+        date_string = event_time.strftime("%Y-%m-%d_%H-%M-%S")
+        filename = "shot_id-%s-%s.pickle" % (shot_id, date_string)
+        logger.error("Unable to apply all required fields, saving event as %s\nException message: %s"
+                     % (filename, msg))
+        capture_event(event, filename)
+        result = None
 
     # clean up the engine before returning
     engine.destroy()
@@ -216,7 +250,9 @@ def is_attribute_change(event) -> bool:
 def get_shot_code(event):
     return event['entity']['name']
 
+# deprecated since we're pulling these from the bootstrapped engine context
 def get_episode_code(event):
     elements = event['entity']['name'].split('_')
     logging.debug(elements)
     return elements[0]
+

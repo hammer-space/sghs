@@ -1,8 +1,10 @@
+import sys
 import os
 import configparser
 import pickle
 import logging
 from unittest import TestCase
+from unittest.mock import patch
 from subprocess import run
 from shutil import rmtree
 
@@ -14,6 +16,8 @@ import shothammer
 config = configparser.ConfigParser()
 config.read('shothammer_config.ini')
 HS_MOUNT = config['test']['HS_MOUNT']
+sys.path.insert(0, "C:/shotgrid-hammerspace/tk-core/python")
+import tank.errors
 
 
 class TestShotHammerFileAccess(TestCase):
@@ -78,21 +82,17 @@ class TestShotHammerFileAccess(TestCase):
         print("got %s" % retval)
         self.assertEqual(retval, "TRUE")
 
+
 class TestShotHammerEventProcessing(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerEventProcessing, self).__init__(*args, **kwargs)
-        with open('sghs_event_shot_tag_add.pickle', 'rb') as F:
+        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event = pickle.load(F)
 
     def test_get_shot_code(self):
-        target_shot_code = 'ep101_sh0000'
+        target_shot_code = 'ep888_sh0000'
         result_shot_code = shothammer.get_shot_code(self.event)
         self.assertEqual(result_shot_code, target_shot_code)
-
-    def test_get_episode_code(self):
-        target_episode_code = 'ep101'
-        result_episode_code = shothammer.get_episode_code(self.event)
-        self.assertEqual(result_episode_code, target_episode_code)
 
     def test_capture_event(self):
         test_pickle = 'shothammer_test.pickle'
@@ -105,11 +105,62 @@ class TestShotHammerEventProcessing(TestCase):
 class TestShotHammerBootstrapping(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerBootstrapping, self).__init__(*args, **kwargs)
-        with open('sghs_event_shot_tag_add.pickle', 'rb') as F:
-            self.event = pickle.load(F)
+        with open('sghs_event_shot_tag_add_9502.pickle', 'rb') as F:
+            self.event_9502 = pickle.load(F)
+        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
+            self.event_9583 = pickle.load(F)
         self.logger = logging.getLogger(__name__)
 
-    def test_get_directory(self):
-        target_path = "P:\\testshow\\work\\episodes\\ep101\\ep101_sh0000"
-        result_path = shothammer.bootstrap_engine_to_shot_path(self.logger, self.event)
-        self.assertEqual(result_path, target_path)
+    def test_get_directory_ep888_sh0000_success(self):
+        # ep888 sh0000 shot id 9583 has the expected path schema
+        target_path = "P:\\testshow\\work\\episodes\\ep888\\ep888_sh0000"
+        result_path = shothammer.bootstrap_engine_to_shot_path(self.logger, self.event_9583)
+        self.assertEqual(target_path, result_path)
+        #self.assertRaises(tank.errors.TankError, shothammer.bootstrap_engine_to_shot_path, self.logger, self.event_9583)
+
+
+class TestShotHammerIntegration(TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestShotHammerIntegration, self).__init__(*args, **kwargs)
+        # the shot without expected path schema
+        with open('sghs_event_shot_tag_add_9502.pickle', 'rb') as F:
+            self.event_9502 = pickle.load(F)
+        # the shot with expected path schema
+        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
+            self.event_9583 = pickle.load(F)
+        self.logger = logging.getLogger(__name__)
+
+    @patch('shothammer.remove_tags')
+    @patch('shothammer.add_tags')
+    def test_shothammer(self, mock_add_tags, mock_remove_tags):
+        shothammer.shothammer(None, self.logger, self.event_9583, None)
+        self.assertTrue(mock_add_tags.called)
+        self.assertTrue(mock_remove_tags.called)
+
+
+class TestShotHammerIntegrationFails(TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestShotHammerIntegrationFails, self).__init__(*args, **kwargs)
+        # the shot without expected path schema
+        with open('sghs_event_shot_tag_add_9502.pickle', 'rb') as F:
+            self.event_9502 = pickle.load(F)
+        # the shot with expected path schema
+        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
+            self.event_9583 = pickle.load(F)
+        self.logger = logging.getLogger(__name__)
+
+    def tearDown(self) -> None:
+        os.remove('shot_id-9502-2022-03-23_22-01-16.pickle')
+
+    @patch('shothammer.remove_tags')
+    @patch('shothammer.add_tags')
+    def test_shothammer_fails_no_tags(self, mock_add_tags, mock_remove_tags):
+        shothammer.shothammer(None, self.logger, self.event_9502, None)
+        self.assertFalse(mock_add_tags.called)
+        self.assertFalse(mock_remove_tags.called)
+
+    def test_shothammer_fails_writes_event_pickle(self):
+        shothammer.shothammer(None, self.logger, self.event_9502, None)
+        with open('shot_id-9502-2022-03-23_22-01-16.pickle', 'rb') as F:
+            saved_event = pickle.load(F)
+        self.assertEqual(self.event_9502, saved_event)
