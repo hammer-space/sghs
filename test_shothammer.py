@@ -11,6 +11,9 @@ from shutil import rmtree
 # system under test
 import shothammer
 
+# get a logger
+logger=logging.getLogger(__name__)
+
 # Hammerspace mount required for these tests to work
 # Change settings in shothammer_config.ini if they collide with the existing file system
 config = configparser.ConfigParser()
@@ -68,7 +71,7 @@ class TestShotHammerFileAccess(TestCase):
         self.assertEqual(self.test_value, tag_value)
 
     def test_hs_keyword_add_norecurse(self):
-        shothammer.hs_keyword_add(self.testfilepath, self.test_keyword, recursive=False)
+        shothammer.hs_keyword_add(self.testfilepath, self.test_keyword, recursive=False, logger=logger)
         cmd = 'hs keyword has %s %s' % (self.test_keyword, self.testfilepath)
         result = run(cmd, shell=True, capture_output=True)
         retval = result.stdout.decode('utf-8').rstrip().strip('"')
@@ -76,7 +79,7 @@ class TestShotHammerFileAccess(TestCase):
         self.assertEqual(retval, "TRUE")
 
     def test_hs_keyword_add_recurse(self):
-        shothammer.hs_keyword_add(self.testdirpath, self.test_keyword, recursive=True)
+        shothammer.hs_keyword_add(self.testdirpath, self.test_keyword, recursive=True, logger=logger)
         cmd = 'hs keyword has %s %s' % (self.test_keyword, self.testdirfilepath)
         result = run(cmd, shell=True, capture_output=True)
         retval = result.stdout.decode('utf-8').rstrip().strip('"')
@@ -86,7 +89,7 @@ class TestShotHammerFileAccess(TestCase):
     @patch('shothammer.subprocess.run')
     def test_hs_keyword_add_filtered_tag(self, mock_subprocess_run):
         shotgrid_tag = 'SGHS_IN_AZ'
-        shothammer.hs_keyword_add(self.testfilepath, shotgrid_tag)
+        shothammer.hs_keyword_add(self.testfilepath, shotgrid_tag, logger=logger)
         self.assertTrue(mock_subprocess_run.called)
 
     @patch('shothammer.subprocess.run')

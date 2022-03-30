@@ -19,8 +19,6 @@ else:
     SGHS_PROJECTS = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
 SGHS_TAG_NAMESPACE = config['shothammer']['SGHS_TAG_NAMESPACE']
 
-print("Project filter: %s" % SGHS_PROJECTS)
-
 # Vanilla sgtk needed for auth so that we can get a context-specific engine
 sys.path.insert(0, config['shothammer']['SG_TOOLKIT'])
 import sgtk
@@ -46,10 +44,6 @@ LAST_EVENT_FILE = config['shothammer']['LAST_EVENT_FILE']
 # global pretty printer
 PP = pprint.PrettyPrinter(indent=2)
 
-# Custom exception to catch tank.errors.TankError and raise it without a shotgrid config
-class TankError(Exception):
-    pass
-
 def registerCallbacks(reg):
     """
     Register all the callbacks for this plugin
@@ -70,9 +64,8 @@ def registerCallbacks(reg):
         None,
     )
     # log level DEBUG during development
-    reg.logger.setLevel(logging.DEBUG)
-    # reg.logger.setLevel(logging.INFO)
-
+    # reg.logger.setLevel(logging.DEBUG)
+    reg.logger.setLevel(logging.INFO)
 
 def shothammer(sg, logger, event, args):
     """
@@ -85,7 +78,7 @@ def shothammer(sg, logger, event, args):
     """
     logger.debug(PP.pprint(event))
     try:
-        logger.debug(project_name_from_event(event))
+        logger.debug(get_project_name(event))
     except TypeError as e: # Project is None in event
         logger.warn("Project is none in event from shot %i" % get_shot_code(event))
         return
@@ -126,7 +119,7 @@ def add_tags(logger, event, path) -> None:
     for tag in tags_to_add:
         # Using Shotgrid tags -> Hammerspace keywords
         logger.info("Setting keyword %s on path %s" % (tag, path))
-        hs_keyword_add(path, tag, recursive=False)
+        hs_keyword_add(path, tag, recursive=False, logger=logger)
 
 def remove_tags(logger, event, path) -> None:
     """
@@ -139,8 +132,7 @@ def remove_tags(logger, event, path) -> None:
     tags_to_remove = [element['name'] for element in event['meta']['removed']]
     for tag in tags_to_remove:
         logger.info("Removing keyword %s from path %s" % (tag, path))
-        hs_keyword_delete(path, tag, recursive=False)
-
+        hs_keyword_delete(path, tag, recursive=False, logger=logger)
 
 def bootstrap_engine_to_shot_path(logger, event) -> str:
     """
@@ -201,20 +193,22 @@ def bootstrap_engine_to_shot_path(logger, event) -> str:
                                                        })
         logger.debug("Full path: %s" % result)
     except tank.errors.TankError as e:
+        # We didn't get a valid path for some reason, likely because we couldn't complete the template provided
         result = None
         msg = str(e)
+        # Use the timestamp on the event itself
         event_time = event['created_at']
         date_string = event_time.strftime("%Y-%m-%d_%H-%M-%S")
+        # filename includes the shot_id and the timestamp of the event
         filename = "shot_id-%s-%s.pickle" % (shot_id, date_string)
         logger.error("Unable to apply all required fields, saving event as %s\nException message: %s"
                      % (filename, msg))
+        # save a pickle of the event for later analysis
         capture_event(event, filename)
-        result = None
 
     # clean up the engine before returning
     engine.destroy()
     return result
-
 
 def hs_tag_set(path, tag, value, recursive=True) -> None:
     if recursive:
@@ -227,7 +221,7 @@ def hs_tag_set(path, tag, value, recursive=True) -> None:
     logging.debug("STDERR:")
     logging.debug(result.stderr)
 
-def hs_keyword_add(path, keyword, recursive=True) -> None:
+def hs_keyword_add(path, keyword, recursive=True, logger=None) -> None:
     if not keyword.startswith(SGHS_TAG_NAMESPACE):
         logging.debug("tag %s not in namespace, skipping")
         return
@@ -236,13 +230,13 @@ def hs_keyword_add(path, keyword, recursive=True) -> None:
     else:
         cmd = 'hs keyword add %s %s' % (keyword, path)
     result = subprocess.run(cmd, shell=True, capture_output=True)
-    logging.debug("hs_keyword_add()")
-    logging.debug("STDOUT:")
-    logging.debug(result.stdout)
-    logging.debug("STDERR:")
-    logging.debug(result.stderr)
+    logger.debug("hs_keyword_add()")
+    logger.debug("STDOUT:")
+    logger.debug(result.stdout)
+    logger.debug("STDERR:")
+    logger.debug(result.stderr)
 
-def hs_keyword_delete(path, keyword, recursive=True) -> None:
+def hs_keyword_delete(path, keyword, recursive=True, logger=None) -> None:
     if not keyword.startswith(SGHS_TAG_NAMESPACE):
         logging.debug("tag %s not in namespace, skipping")
         return
@@ -251,13 +245,13 @@ def hs_keyword_delete(path, keyword, recursive=True) -> None:
     else:
         cmd = 'hs keyword delete %s %s' % (keyword, path)
     result = subprocess.run(cmd, shell=True, capture_output=True)
-    logging.debug("hs_keyword_delete()")
-    logging.debug("STDOUT:")
-    logging.debug(result.stdout)
-    logging.debug("STDERR:")
-    logging.debug(result.stderr)
+    logger.debug("hs_keyword_delete()")
+    logger.debug("STDOUT:")
+    logger.debug(result.stdout)
+    logger.debug("STDERR:")
+    logger.debug(result.stderr)
 
-def project_name_from_event(event) -> str:
+def get_project_name(event) -> str:
     return event['project']['name']
 
 def is_attribute_change(event) -> bool:
@@ -265,18 +259,11 @@ def is_attribute_change(event) -> bool:
 
 def get_shot_code(event) -> str:
     """
-    This isn't the shotid, but rather the full code including episode or sequence
+    This isn't just the shotid, but rather the full code including episode or sequence
     :param event:
     :return:
     """
     return event['entity']['name']
 
-def get_project_id(event):
+def get_project_id(event) -> int:
     return event['project']['id']
-
-# deprecated since we're pulling these from the bootstrapped engine context
-def get_episode_code(event):
-    elements = event['entity']['name'].split('_')
-    logging.debug(elements)
-    return elements[0]
-
