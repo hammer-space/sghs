@@ -175,7 +175,9 @@ class TestShotHammerIntegration(TestCase):
             self.event_9583 = pickle.load(F)
         self.logger = logging.getLogger(__name__)
 
-    # TODO: This test passes when run by itself, but not when we run all the tests in this module
+    def setUp(self) -> None:
+        shothammer.SGHS_PROJECTS = [952, 122]
+
     @patch('shothammer.remove_tags')
     @patch('shothammer.add_tags')
     def test_shothammer(self, mock_add_tags, mock_remove_tags):
@@ -194,6 +196,9 @@ class TestShotHammerIntegrationFails(TestCase):
         with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event_9583 = pickle.load(F)
         self.logger = logging.getLogger(__name__)
+
+    def setUp(self) -> None:
+        shothammer.SGHS_PROJECTS = [952, 122]
 
     def tearDown(self) -> None:
         os.remove('shot_id-9502-2022-03-23_22-01-16.pickle')
