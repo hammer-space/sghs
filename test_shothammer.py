@@ -105,7 +105,7 @@ class TestShotHammerEventFilter(TestCase):
         self.project_filter = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
         with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event = pickle.load(F)
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
 
     def test_event_filter_list(self):
         print(self.project_filter)
@@ -158,7 +158,7 @@ class TestShotHammerBootstrapping(TestCase):
             self.event_9502 = pickle.load(F)
         with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event_9583 = pickle.load(F)
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
 
     def test_get_directory_ep888_sh0000_success(self):
         # ep888 sh0000 shot id 9583 has the expected path schema
@@ -176,7 +176,7 @@ class TestShotHammerIntegration(TestCase):
         # the shot with expected path schema
         with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event_9583 = pickle.load(F)
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
 
     def setUp(self) -> None:
         shothammer.SGHS_PROJECTS = [952, 122]
@@ -198,7 +198,7 @@ class TestShotHammerIntegrationFails(TestCase):
         # the shot with expected path schema
         with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event_9583 = pickle.load(F)
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
 
     def setUp(self) -> None:
         shothammer.SGHS_PROJECTS = [952, 122]
