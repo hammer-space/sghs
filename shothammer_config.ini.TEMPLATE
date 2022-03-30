@@ -15,6 +15,8 @@ SG_TOOLKIT = C:/shotgrid-hammerspace/tk-core/python
 SGHS_PROJECTS =
 # Tag prefix for filtering, only change if you have a namespace collision
 SGHS_TAG_NAMESPACE = SGHS_
+# Directory path default template name
+SGHS_PATH_TEMPLATE = work_shot_area
 
 [test]
 # A Hammerspace mount you can test on
