@@ -160,7 +160,7 @@ def bootstrap_engine_to_shot_path(logger, event) -> str:
 
     # use the work_shot_area_template from the engine-specific sgtk
     # TODO: figure out the name of the template we want and use that
-    work_shot_area_template = engine.sgtk.templates["work_shot_area"]
+    work_shot_area_template = engine.sgtk.templates[config['shothammer']['SGHS_PATH_TEMPLATE']]
     logger.debug("work_shot_area_template: %s" % str(work_shot_area_template))
 
     # set up filters and fields to pass to find_one so we get the right dict
