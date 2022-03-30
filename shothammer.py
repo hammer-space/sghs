@@ -84,7 +84,11 @@ def shothammer(sg, logger, event, args):
     :param args:    Additional arguments passed
     """
     logger.debug(PP.pprint(event))
-    logger.debug(project_name_from_event(event))
+    try:
+        logger.debug(project_name_from_event(event))
+    except TypeError as e: # Project is None in event
+        logger.warn("Project is none in event from shot %i" % get_shot_code(event))
+        return
 
     if CAPTURE_LAST_EVENT:
         capture_event(event, LAST_EVENT_FILE)

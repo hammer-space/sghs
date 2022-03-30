@@ -148,8 +148,6 @@ class TestShotHammerEventProcessing(TestCase):
         self.assertEqual(result, target_project_id)
 
 
-
-
 class TestShotHammerBootstrapping(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerBootstrapping, self).__init__(*args, **kwargs)
@@ -164,7 +162,6 @@ class TestShotHammerBootstrapping(TestCase):
         target_path = "P:\\testshow\\work\\episodes\\ep888\\ep888_sh0000"
         result_path = shothammer.bootstrap_engine_to_shot_path(self.logger, self.event_9583)
         self.assertEqual(target_path, result_path)
-        #self.assertRaises(tank.errors.TankError, shothammer.bootstrap_engine_to_shot_path, self.logger, self.event_9583)
 
 
 class TestShotHammerIntegration(TestCase):
