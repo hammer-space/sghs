@@ -1,0 +1,9 @@
+click==8.0.4
+colorama==0.4.4
+hstk==4.6.3.5
+importlib-metadata==4.11.3
+pywin32==303
+shotgun-api3==3.3.3
+six==1.16.0
+typing-extensions==4.1.1
+zipp==3.7.0
