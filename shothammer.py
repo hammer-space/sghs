@@ -118,10 +118,11 @@ def add_tags(logger, event, path) -> None:
     :return:
     """
     tags_to_add = [element['name'] for element in event['meta']['added']]
+    logger.debug("Tags to add: %s" % str(tags_to_add))
     for tag in tags_to_add:
         # Using Shotgrid tags -> Hammerspace keywords
         logger.info("Setting keyword %s on path %s" % (tag, path))
-        hs_keyword_add(path, tag, recursive=True)
+        hs_keyword_add(path, tag, recursive=False)
 
 def remove_tags(logger, event, path) -> None:
     """
@@ -134,7 +135,7 @@ def remove_tags(logger, event, path) -> None:
     tags_to_remove = [element['name'] for element in event['meta']['removed']]
     for tag in tags_to_remove:
         logger.info("Removing keyword %s from path %s" % (tag, path))
-        hs_keyword_delete(path, tag, recursive=True)
+        hs_keyword_delete(path, tag, recursive=False)
 
 
 def bootstrap_engine_to_shot_path(logger, event) -> str:

@@ -178,6 +178,7 @@ class TestShotHammerIntegration(TestCase):
             self.event_9583 = pickle.load(F)
         self.logger = logging.getLogger(__name__)
 
+    # TODO: This test passes when run by itself, but not when we run all the tests in this module
     @patch('shothammer.remove_tags')
     @patch('shothammer.add_tags')
     def test_shothammer(self, mock_add_tags, mock_remove_tags):
@@ -185,7 +186,7 @@ class TestShotHammerIntegration(TestCase):
         self.assertTrue(mock_add_tags.called)
         self.assertTrue(mock_remove_tags.called)
 
-
+# TODO: Just like above, this test passes when run by itself, but not when we run all the tests
 class TestShotHammerIntegrationFails(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerIntegrationFails, self).__init__(*args, **kwargs)
