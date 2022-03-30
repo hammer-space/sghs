@@ -188,7 +188,7 @@ class TestShotHammerIntegration(TestCase):
         self.assertTrue(mock_add_tags.called)
         self.assertTrue(mock_remove_tags.called)
 
-# TODO: Just like above, this test passes when run by itself, but not when we run all the tests
+
 class TestShotHammerIntegrationFails(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerIntegrationFails, self).__init__(*args, **kwargs)
