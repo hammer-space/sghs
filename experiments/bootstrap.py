@@ -40,7 +40,7 @@ print(mgr)
 # project_id = project_id_from_event(event)
 # project_id = 952
 # shot_id = 9583
-shot_id = 9502
+shot_id = 862
 # bootstrap the specific project
 print("trying to bootstrap shot ID %s" % shot_id)
 # engine = mgr.bootstrap_engine("tk-shell", entity={"type": "Project", "id": project_id})
@@ -49,13 +49,13 @@ engine = mgr.bootstrap_engine("tk-shell", entity={"type": "Shot", "id": shot_id}
 # now we're bootstrapped, we can do what we need to do
 print("here is the engine object: %s" % str(engine))
 
-# Get the work_shot_area_template from the new engine.sgtk
-work_shot_area_template = engine.sgtk.templates["work_shot_area"]
+# Get the shot_root_template from the new engine.sgtk
+shot_root_template = engine.sgtk.templates["shot_root"]
 
-print("work_shot_area_template:\n%s" % str(work_shot_area_template))
+print("shot_root_template: %s" % str(shot_root_template))
 
-print("work_shot_area_template.keys:\n%s" % str(work_shot_area_template.keys))
-print("work_shot_area_template.definition:\n%s" % str(work_shot_area_template.definition))
+print("shot_root_template.keys: %s" % str(shot_root_template.keys))
+print("shot_root_template.definition: %s" % str(shot_root_template.definition))
 
 # set up the filter and the fields to pass to find_one
 filters = [["id", "is", shot_id]]
@@ -66,19 +66,19 @@ full_shot = engine.shotgun.find_one("Shot", filters=filters, fields=fields)
 
 print("full_shot:\n%s" % str(full_shot))
 Shot = full_shot['code']
-Sequence = full_shot['sg_sequence']
-Episode = full_shot['sg_episode']['name']
+Sequence = full_shot['sg_sequence']['name']
+# Episode = full_shot['sg_episode']['name']
 
 # apply_fields to get the whole path
-print("work_shot_area_template.apply_fields():\n%s" %
-str(work_shot_area_template.apply_fields({'Shot':Shot,
+print("shot_root_template.apply_fields():\n%s" %
+    str(shot_root_template.apply_fields({'Shot':Shot,
                                         'Sequence':Sequence,
-                                        'Episode':Episode,
+                                        # 'Episode':Episode,
                                         })))
-# print(work_shot_area_template.apply_fields({'Episode':'ep888', 'Shot':'sh0000'}))
+# print(shot_root_template.apply_fields({'Episode':'ep888', 'Shot':'sh0000'}))
 
-# fields = project_context.as_template_fields(work_shot_area_template)
-# fields = engine.context.as_template_fields(work_shot_area_template)
+# fields = project_context.as_template_fields(shot_root_template)
+# fields = engine.context.as_template_fields(shot_root_template)
 # print(fields)
 
 # now we're done, so we can destroy the engine and await another callback
