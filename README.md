@@ -198,7 +198,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@mabott](https://twitter.com/mabott) - mike.bott@hammerspace.com
+Mike Bott, Principal Systems Engineer - [@mabott](https://twitter.com/mabott) - mike.bott@hammerspace.com
 
 Project Link: [https://github.com/mabott/sghs](https://github.com/mabott/sghs)
 
