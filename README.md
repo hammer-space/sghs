@@ -123,8 +123,6 @@ will require some configuration depending on paths and pipeline configuration na
 1. Clone this repository `git clone https://github.com/mabott/sghs.git`
 2. Copy or hard link shothammer.py to your shotgunEvents plugin directory.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
-
 ### Configuration
 
 1. Adjust shothammer_config.ini to fit environment (paths, fixing namespace overlap, etc.)
@@ -132,6 +130,7 @@ will require some configuration depending on paths and pipeline configuration na
 3. One or more Hammerspace clusters set up with keyword-based objectives to drive data placement
 
 ### Troubleshooting
+
 Given the appropriate values in shothammer_config.ini, the tests in test_shothammer.py should pass. If the plugin gets
 disabled by shotgunEvents then there is a fatal problem somewhere. Running the tests using nose or your favorite IDE
 should give enough details to show what is broken.
@@ -140,7 +139,7 @@ should give enough details to show what is broken.
 1. Make sure hstk is installed in the same environment running shotgunEvents.
 2. Make sure the authentication information for Shotgrid is complete, both name and application key.
 
-
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
