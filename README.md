@@ -106,18 +106,6 @@ events or webhooks.
 
 
 <!-- GETTING STARTED -->
-#Prerequisites
-
-
-#Installation
-
-
-#Configuration
-
-
-#Troubleshooting
-
-
 ## Getting Started
 
 Here are some basics on getting up and running. Everyone's Shotgrid instance is configured a bit differently and
