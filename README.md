@@ -113,44 +113,36 @@ will require some configuration depending on paths and pipeline configuration na
 
 ### Prerequisites
 
-1. Shotgrid API installed and configured 
-2. Shotgrid event daemon installed and configured
-3. Hammerspace Toolkit (hstk) installed: `$ pip install hstk`
+1. [Shotgrid API](https://github.com/shotgunsoftware/python-api) installed and configured 
+2. [Shotgrid event daemon](https://github.com/shotgunsoftware/shotgunEvents) installed and configured
+3. [Hammerspace Toolkit](https://github.com/hammer-space/hstk) (hstk) installed: `$ pip install hstk`
 4. Hammerspace file system mounted
 
 ### Installation
 
 1. Clone this repository `git clone https://github.com/mabott/sghs.git`
-2. Copy or hard link shothammer.py to your shotgunEvents plugin directory.
+2. Copy or link shothammer.py to your shotgunEvents plugin directory
+3. Install requirements `pip install -r requirements.txt`
 
 ### Configuration
 
 1. Adjust shothammer_config.ini to fit environment (paths, fixing namespace overlap, etc.)
-2. Copy shothammer_config.ini to shotgunEvents working directory 
+2. Copy or link shothammer_config.ini to shotgunEvents working directory 
 3. One or more Hammerspace clusters set up with keyword-based objectives to drive data placement
 
 ### Troubleshooting
 
 Given the appropriate values in shothammer_config.ini, the tests in test_shothammer.py should pass. If the plugin gets
-disabled by shotgunEvents then there is a fatal problem somewhere. Running the tests using nose or your favorite IDE
-should give enough details to show what is broken.
+disabled by shotgunEvents then there is a fatal problem somewhere. Running the tests using nose/pytest/your favorite IDE
+should give enough details to show what is broken. [Open an issue](https://github.com/mabott/sghs/issues) with details 
+and someone will try to help.
 
 #### Things to check:
 1. Make sure hstk is installed in the same environment running shotgunEvents.
-2. Make sure the authentication information for Shotgrid is complete, both name and application key.
+2. Make sure the authentication information for Shotgrid is complete, both name and application key, for the 
+shotgunEvents config as well as the shothammer config.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -173,8 +165,8 @@ See the [open issues](https://github.com/mabott/sghs/issues) for a full list of 
 
 We welcome contributions to this project so that we can make this plugin applicable to many different workflows!
 
-If you have a suggestion that would improve this project, please fork the repo and create a pull request. You can also
-simply open an issue with the tag "enhancement". Please don't forget to give the project a star! Thanks again!
+Feel free to fork this repo and create a pull request. You can also just open an issue with the tag "enhancement". 
+Please give the project a star if you like it. Thanks!
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -216,7 +208,7 @@ for his technical vision, guidance, and support
 * [Dan Hutchinson](dan.hutchinson@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/)
 for timely application of his Python and Shotgrid knowledge
 * [Natasha Kelkar](natasha.kelkar@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/)
-for her technical direction-setting
+for steering me away from several dead ends and getting me headed in the right direction
 * Our excellent crew at [Hammerspace](https://hammerspace.com/) for developing cool storage technology that solves 
 interesting distributed storage problems
 
