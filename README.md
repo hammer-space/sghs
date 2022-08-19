@@ -10,7 +10,7 @@
 -->
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
+[![Stars][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
@@ -121,24 +121,14 @@ will require some configuration depending on paths and pipeline configuration na
 ### Installation
 
 1. Clone this repository `git clone https://github.com/mabott/sghs.git`
-<<<<<<< HEAD
-2. Copy or link shothammer.py to your shotgunEvents plugin directory
-3. Install requirements `pip install -r requirements.txt`
-=======
 2. Copy or hard link shothammer.py to your shotgunEvents plugin directory.
-
->>>>>>> 9969f6c (Finished README.md including screenshots and Usage example)
+3. Install requirements `pip install -r requirements.txt`
 
 ### Configuration
 
 1. Adjust shothammer_config.ini to fit environment (paths, fixing namespace overlap, etc.)
-<<<<<<< HEAD
-2. Copy or link shothammer_config.ini to shotgunEvents working directory 
-3. One or more Hammerspace clusters set up with keyword-based objectives to drive data placement
-=======
 2. Copy or hard link shothammer_config.ini to shotgunEvents working directory 
 3. One or more Hammerspace clusters set up with keyword-based objectives to drive data placement (e.g. `IF HAS_KEYWORD("SGHS_LOCATION")`)
->>>>>>> 9969f6c (Finished README.md including screenshots and Usage example)
 
 ### Troubleshooting
 
@@ -149,11 +139,7 @@ and someone will try to help.
 
 #### Things to check:
 1. Make sure hstk is installed in the same environment running shotgunEvents.
-<<<<<<< HEAD
-2. Make sure the authentication information for Shotgrid is complete, both name and application key, for the 
-shotgunEvents config as well as the shothammer config.
-=======
-2. Make sure the authentication information for Shotgrid is complete, both name and application key.
+2. Make sure the authentication information for Shotgrid is complete, both name and application key, for the shotgunEvents config as well as the shothammer config.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -204,7 +190,6 @@ The plugin will set the keyword on the file system at the top level directory fo
 ![image info](./images/hs_webui_03.jpg)
 
 Access to these files on the AZ Hammerspace cluster will now be local access, instead of remote!
->>>>>>> 9969f6c (Finished README.md including screenshots and Usage example)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -272,10 +257,8 @@ This project wouldn't exist without these folks' contributions:
 for his technical vision, guidance, and support
 * [Dan Hutchinson](dan.hutchinson@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/)
 for timely application of his Python and Shotgrid knowledge
-* [Natasha Kelkar](natasha.kelkar@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/)
-for steering me away from several dead ends and getting me headed in the right direction
-* Our excellent crew at [Hammerspace](https://hammerspace.com/) for developing cool storage technology that solves 
-interesting distributed storage problems
+* [Natasha Kelkar](natasha.kelkar@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/) for technical direction-setting, Python skills, deep Shotgrid knowledge, and steering me away from several dead ends.
+* Our excellent crew at [Hammerspace](https://hammerspace.com/) for developing cool storage technology that solves interesting distributed storage problems
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
