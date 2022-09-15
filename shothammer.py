@@ -64,8 +64,8 @@ def registerCallbacks(reg):
         None,
     )
     # log level DEBUG during development
-    # reg.logger.setLevel(logging.DEBUG)
-    reg.logger.setLevel(logging.INFO)
+    reg.logger.setLevel(logging.DEBUG)
+    # reg.logger.setLevel(logging.INFO)
 
 def shothammer(sg, logger, event, args):
     """
@@ -76,6 +76,7 @@ def shothammer(sg, logger, event, args):
     :param event:   EventLogEntry dictionary
     :param args:    Additional arguments passed
     """
+    logger.setLevel(logging.DEBUG)
     logger.debug(PP.pprint(event))
     try:
         logger.debug(get_project_name(event))
@@ -91,6 +92,7 @@ def shothammer(sg, logger, event, args):
     if get_project_id(event) in SGHS_PROJECTS:
         path = bootstrap_engine_to_shot_path(logger, event)
 
+    logger.debug("Path: %s" % path)
     # These functions take shotgrid tags and add/remove keywords to/from the path specified
     # only if we got a real path
     if path:
@@ -175,7 +177,7 @@ def bootstrap_engine_to_shot_path(logger, event) -> str:
         logger.warning("TypeError trying to get Shot from full_shot: %s" % repr(e))
         Shot = None
     try:
-        Sequence = full_shot['sg_sequence']
+        Sequence = full_shot['sg_sequence']['name']
     except TypeError as e:
         logger.warning("TypeError trying to get Sequence from full_shot: %s" % repr(e))
         Sequence = None
@@ -184,12 +186,18 @@ def bootstrap_engine_to_shot_path(logger, event) -> str:
     except TypeError as e:
         logger.warning("TypeError trying to get Episode from full_shot: %s" % repr(e))
         Episode = None
+    except KeyError as e:
+        logger.warning("KeyError trying to get Episode from full_shot: %s" % repr(e))
+        Episode = ''
 
     # compose a dict and feed it to apply_fields to get a path
+    print("Shot: %s" % Shot)
+    print("Sequence: %s" % Sequence)
+    print("Episode: %s" % Episode)
     try:
         result = work_shot_area_template.apply_fields({'Shot':Shot,
                                                        'Sequence':Sequence,
-                                                       'Episode': Episode,
+                                                       # 'Episode': Episode,
                                                        })
         logger.debug("Full path: %s" % result)
     except tank.errors.TankError as e:

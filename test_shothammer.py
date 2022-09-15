@@ -8,11 +8,14 @@ from unittest.mock import patch
 from subprocess import run
 from shutil import rmtree
 
+# get a logger
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
 # system under test
 import shothammer
 
-# get a logger
-logger=logging.getLogger(__name__)
 
 # Hammerspace mount required for these tests to work
 # Change settings in shothammer_config.ini if they collide with the existing file system
@@ -115,17 +118,23 @@ class TestShotHammerEventFilter(TestCase):
     @patch('shothammer.add_tags')
     @patch('shothammer.bootstrap_engine_to_shot_path')
     def test_filtered_event_calls_bootstrap(self, mock_bootstrap, mock_add_tags, mock_remove_tags):
+        original_projects = shothammer.SGHS_PROJECTS
         shothammer.SGHS_PROJECTS = [952, 122]
         shothammer.shothammer(None, self.logger, self.event, None)
+        shothammer.SGHS_PROJECTS = original_projects
         self.assertTrue(mock_bootstrap.called)
+
 
     @patch('shothammer.remove_tags')
     @patch('shothammer.add_tags')
     @patch('shothammer.bootstrap_engine_to_shot_path')
     def test_filtered_event_does_not_call_bootstrap(self, mock_bootstrap, mock_add_tags, mock_remove_tags):
+        original_projects = shothammer.SGHS_PROJECTS
         shothammer.SGHS_PROJECTS = [100, 101]
         shothammer.shothammer(None, self.logger, self.event, None)
+        shothammer.SGHS_PROJECTS = original_projects
         self.assertFalse(mock_bootstrap.called)
+
 
 class TestShotHammerEventProcessing(TestCase):
     def __init__(self, *args, **kwargs):
@@ -154,67 +163,33 @@ class TestShotHammerEventProcessing(TestCase):
 class TestShotHammerBootstrapping(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerBootstrapping, self).__init__(*args, **kwargs)
-        with open('sghs_event_shot_tag_add_9502.pickle', 'rb') as F:
-            self.event_9502 = pickle.load(F)
-        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
-            self.event_9583 = pickle.load(F)
+        with open('sghs_event_shot_tag_add_862.pickle', 'rb') as F:
+            self.event_862 = pickle.load(F)
         self.logger = logger
 
-    def test_get_directory_ep888_sh0000_success(self):
-        # ep888 sh0000 shot id 9583 has the expected path schema
-        target_path = "P:\\testshow\\work\\episodes\\ep888\\ep888_sh0000"
-        result_path = shothammer.bootstrap_engine_to_shot_path(self.logger, self.event_9583)
+    def test_get_directory_event_862_success(self):
+        target_path = "H:\\Animation\\sequences\\bunny_010\\bunny_010_0010"
+        result_path = shothammer.bootstrap_engine_to_shot_path(self.logger, self.event_862)
         self.assertEqual(target_path, result_path)
 
 
 class TestShotHammerIntegration(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerIntegration, self).__init__(*args, **kwargs)
-        # the shot without expected path schema
-        with open('sghs_event_shot_tag_add_9502.pickle', 'rb') as F:
-            self.event_9502 = pickle.load(F)
-        # the shot with expected path schema
-        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
-            self.event_9583 = pickle.load(F)
+        with open('sghs_event_shot_tag_add_862.pickle', 'rb') as F:
+            self.event_add_862 = pickle.load(F)
+        with open('sghs_event_shot_tag_remove_862.pickle', 'rb') as F2:
+            self.event_remove_862 = pickle.load(F2)
         self.logger = logger
 
-    def setUp(self) -> None:
-        shothammer.SGHS_PROJECTS = [952, 122]
+    @patch('shothammer.add_tags')
+    def test_shothammer_adds_tags(self, mock_add_tags):
+        shothammer.shothammer(None, self.logger, self.event_add_862, None)
+        self.assertTrue(mock_add_tags.called)
 
     @patch('shothammer.remove_tags')
-    @patch('shothammer.add_tags')
-    def test_shothammer(self, mock_add_tags, mock_remove_tags):
-        shothammer.shothammer(None, self.logger, self.event_9583, None)
-        self.assertTrue(mock_add_tags.called)
+    def test_shothammer_removes_tags(self, mock_remove_tags):
+        shothammer.shothammer(None, self.logger, self.event_remove_862, None)
         self.assertTrue(mock_remove_tags.called)
 
 
-class TestShotHammerIntegrationFails(TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestShotHammerIntegrationFails, self).__init__(*args, **kwargs)
-        # the shot without expected path schema
-        with open('sghs_event_shot_tag_add_9502.pickle', 'rb') as F:
-            self.event_9502 = pickle.load(F)
-        # the shot with expected path schema
-        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
-            self.event_9583 = pickle.load(F)
-        self.logger = logger
-
-    def setUp(self) -> None:
-        shothammer.SGHS_PROJECTS = [952, 122]
-
-    def tearDown(self) -> None:
-        os.remove('shot_id-9502-2022-03-23_22-01-16.pickle')
-
-    @patch('shothammer.remove_tags')
-    @patch('shothammer.add_tags')
-    def test_shothammer_fails_no_tags(self, mock_add_tags, mock_remove_tags):
-        shothammer.shothammer(None, self.logger, self.event_9502, None)
-        self.assertFalse(mock_add_tags.called)
-        self.assertFalse(mock_remove_tags.called)
-
-    def test_shothammer_fails_writes_event_pickle(self):
-        shothammer.shothammer(None, self.logger, self.event_9502, None)
-        with open('shot_id-9502-2022-03-23_22-01-16.pickle', 'rb') as F:
-            saved_event = pickle.load(F)
-        self.assertEqual(self.event_9502, saved_event)
