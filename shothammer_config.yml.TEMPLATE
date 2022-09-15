@@ -15,9 +15,18 @@ shothammer:
   SGHS_PROJECTS: 70
   # Tag prefix for filtering, only change if you have a namespace collision
   SGHS_TAG_NAMESPACE: SGHS_
-  # Directory path default template name
+  # Directory path default template name if you only have one shot template
   SGHS_PATH_TEMPLATE: shot_root
-  TK_CORE_PYTHON_PATH: C:/shotgrid-hammerspace/tk-core/python
+  SGHS_PATH_TEMPLATES:
+    Shot:
+      - shot_template_1
+      - shot_template_2
+    Sequence:
+      - sequence_template_1
+      - sequence_template_2
+    Task:
+      - task_template_1
+      - task_template_2
 
 
 test:
@@ -29,3 +38,5 @@ test:
   TEST_VALUE: test_value
   # This must start with SGHS_ to get past the default tag filter above
   TEST_KEYWORD: SGHS_TEST_KEYWORD
+  # Path to the python directory in a shotgrid tk-core directory
+  TK_CORE_PYTHON_PATH: C:/shotgrid-hammerspace/tk-core/python
