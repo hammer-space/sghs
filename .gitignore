@@ -2,3 +2,5 @@
 *.ini
 .idea
 __pycache__
+*.yml
+*.yaml
