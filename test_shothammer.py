@@ -1,6 +1,6 @@
 import sys
 import os
-import configparser
+import yaml
 import pickle
 import logging
 from unittest import TestCase
@@ -12,17 +12,15 @@ from shutil import rmtree
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-
 # system under test
 import shothammer
 
-
 # Hammerspace mount required for these tests to work
-# Change settings in shothammer_config.ini if they collide with the existing file system
-config = configparser.ConfigParser()
-config.read('shothammer_config.ini')
+# Change settings in shothammer_config.yml if they collide with the existing file system
+with open('shothammer_config.yml') as F:
+    config = yaml.load(F, Loader=yaml.FullLoader)
 HS_MOUNT = config['test']['HS_MOUNT']
-sys.path.insert(0, "C:/shotgrid-hammerspace/tk-core/python")
+sys.path.insert(0, config['test']['TK_CORE_PYTHON_PATH'])
 import tank.errors
 
 
@@ -37,7 +35,7 @@ class TestShotHammerFileAccess(TestCase):
         self.test_tag = config['test']['TEST_TAG']
         self.test_value = config['test']['TEST_VALUE']
         self.test_keyword = config['test']['TEST_KEYWORD']
-        self.project_filter = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
+        self.project_filter = config['shothammer']['SGHS_PROJECTS']
 
     def setUp(self):
         # make a test file in the root of the mount
@@ -105,7 +103,7 @@ class TestShotHammerFileAccess(TestCase):
 class TestShotHammerEventFilter(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerEventFilter, self).__init__(*args, **kwargs)
-        self.project_filter = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
+        self.project_filter = config['shothammer']['SGHS_PROJECTS']
         with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event = pickle.load(F)
         self.logger = logger

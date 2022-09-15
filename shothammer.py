@@ -3,20 +3,19 @@ import sys
 import logging
 import subprocess
 import pprint
-import configparser
+import yaml
 import pickle
 
 from datetime import datetime
 
 # Read config and set up global auth variables
-config = configparser.ConfigParser()
-config.read('shothammer_config.ini')
+with open('shothammer_config.yml') as F:
+    config = yaml.load(F, Loader=yaml.FullLoader)
 SGHS_NAME = config['shothammer']['SGHS_NAME']
 SGHS_KEY = config['shothammer']['SGHS_KEY']
-if config['shothammer']['SGHS_PROJECTS'] == '':
-    SGHS_PROJECTS = None
-else:
-    SGHS_PROJECTS = [int(s) for s in config['shothammer']['SGHS_PROJECTS'].split(',')]
+
+# Set up project and tag filters
+SGHS_PROJECTS = config['shothammer']['SGHS_PROJECTS']
 SGHS_TAG_NAMESPACE = config['shothammer']['SGHS_TAG_NAMESPACE']
 
 # Vanilla sgtk needed for auth so that we can get a context-specific engine
@@ -37,8 +36,8 @@ user = sa.create_script_user(api_script=SGHS_NAME,
 sgtk.set_authenticated_user(user)
 # Now we are set up for bootstrapping the engine in various contexts, handled per-callback
 
-# Whether or not to capture the last event, and where to put it. Edit in shothammer_config.ini
-CAPTURE_LAST_EVENT = config.getboolean('shothammer', 'CAPTURE_LAST_EVENT')
+# Whether to capture the last event, and where to put it. Edit in shothammer_config.yml
+CAPTURE_LAST_EVENT = config['shothammer']['CAPTURE_LAST_EVENT']
 LAST_EVENT_FILE = config['shothammer']['LAST_EVENT_FILE']
 
 # global pretty printer
@@ -99,6 +98,7 @@ def shothammer(sg, logger, event, args):
         add_tags(logger, event, path)
         remove_tags(logger, event, path)
 
+
 def capture_event(event, filename) -> None:
     """
     Save a pickle to the location specified in the .ini config
@@ -107,6 +107,7 @@ def capture_event(event, filename) -> None:
     """
     with open(filename, 'wb') as F:
         pickle.dump(event, F)
+
 
 def add_tags(logger, event, path) -> None:
     """
@@ -123,6 +124,7 @@ def add_tags(logger, event, path) -> None:
         logger.info("Setting keyword %s on path %s" % (tag, path))
         hs_keyword_add(path, tag, recursive=False, logger=logger)
 
+
 def remove_tags(logger, event, path) -> None:
     """
     Take list of removed tags from Shotgrid event, remove the corresponding keywords directly on the path specified
@@ -135,6 +137,7 @@ def remove_tags(logger, event, path) -> None:
     for tag in tags_to_remove:
         logger.info("Removing keyword %s from path %s" % (tag, path))
         hs_keyword_delete(path, tag, recursive=False, logger=logger)
+
 
 def bootstrap_engine_to_shot_path(logger, event) -> str:
     """
@@ -218,6 +221,7 @@ def bootstrap_engine_to_shot_path(logger, event) -> str:
     engine.destroy()
     return result
 
+
 def hs_tag_set(path, tag, value, recursive=True) -> None:
     if recursive:
         cmd = 'hs tag set -r -e \'%s\' %s %s' % (value, tag, path)
@@ -228,6 +232,7 @@ def hs_tag_set(path, tag, value, recursive=True) -> None:
     logging.debug(result.stdout)
     logging.debug("STDERR:")
     logging.debug(result.stderr)
+
 
 def hs_keyword_add(path, keyword, recursive=True, logger=None) -> None:
     if not keyword.startswith(SGHS_TAG_NAMESPACE):
@@ -244,6 +249,7 @@ def hs_keyword_add(path, keyword, recursive=True, logger=None) -> None:
     logger.debug("STDERR:")
     logger.debug(result.stderr)
 
+
 def hs_keyword_delete(path, keyword, recursive=True, logger=None) -> None:
     if not keyword.startswith(SGHS_TAG_NAMESPACE):
         logging.debug("tag %s not in namespace, skipping")
@@ -259,11 +265,14 @@ def hs_keyword_delete(path, keyword, recursive=True, logger=None) -> None:
     logger.debug("STDERR:")
     logger.debug(result.stderr)
 
+
 def get_project_name(event) -> str:
     return event['project']['name']
 
+
 def is_attribute_change(event) -> bool:
     return event['meta']['type'] == 'attribute_change'
+
 
 def get_shot_code(event) -> str:
     """
@@ -272,6 +281,7 @@ def get_shot_code(event) -> str:
     :return:
     """
     return event['entity']['name']
+
 
 def get_project_id(event) -> int:
     return event['project']['id']
