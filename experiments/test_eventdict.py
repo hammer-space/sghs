@@ -22,7 +22,7 @@ with open('../sghs_event_sequence.pickle', 'rb') as F:
 with open('../sghs_event_shot.pickle', 'rb') as F:
     tag_change_shot = pickle.load(F)
 
-with open('../task_tag_add_event.pickle', 'rb') as F:
+with open('../sghs_event_task.pickle', 'rb') as F:
     tag_change_task = pickle.load(F)
 
 print(TEMPLATES.keys())

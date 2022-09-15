@@ -191,3 +191,28 @@ class TestShotHammerIntegration(TestCase):
         self.assertTrue(mock_remove_tags.called)
 
 
+class TestMultipleObjectTypes(TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestMultipleObjectTypes, self).__init__(*args, **kwargs)
+        with open('sghs_event_shot.pickle', 'rb') as F:
+            self.sghs_event_shot = pickle.load(F)
+        with open('sghs_event_sequence.pickle', 'rb') as F2:
+            self.sghs_event_sequence = pickle.load(F2)
+        with open('sghs_event_task.pickle', 'rb') as F3:
+            self.sghs_event_task = pickle.load(F3)
+        self.logger = logger
+
+    def test_get_object_type_from_event_shot(self):
+        target = 'Shot'
+        result = shothammer.get_object_type_from_event(self.sghs_event_shot)
+        self.assertEqual(target, result)
+
+    def test_get_object_type_from_event_sequence(self):
+        target = 'Sequence'
+        result = shothammer.get_object_type_from_event(self.sghs_event_sequence)
+        self.assertEqual(target, result)
+
+    def test_get_object_type_from_event_task(self):
+        target = 'Task'
+        result = shothammer.get_object_type_from_event(self.sghs_event_task)
+        self.assertEqual(target, result)

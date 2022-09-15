@@ -285,3 +285,8 @@ def get_shot_code(event) -> str:
 
 def get_project_id(event) -> int:
     return event['project']['id']
+
+
+def get_object_type_from_event(event):
+    """Eat an event, return 'Shot', 'Sequence', or 'Task'"""
+    return event['meta']['entity_type']
