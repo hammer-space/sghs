@@ -24,17 +24,17 @@ import sgtk
 import tank.errors
 
 # Initial sgtk auth
-sgtk.LogManager().initialize_custom_handler()
-sgtk.LogManager().global_debug = False
-# Create a ShotgunAuthenticator object
-sa = sgtk.authentication.ShotgunAuthenticator()
-# Use the ShotgunAuthenticator to create a user object
-user = sa.create_script_user(api_script=SGHS_NAME,
-                             api_key=SGHS_KEY,
-                             host=os.environ['SG_ED_SITE_URL'])
-# Authenticate
-sgtk.set_authenticated_user(user)
-# Now we are set up for bootstrapping the engine in various contexts, handled per-callback
+# sgtk.LogManager().initialize_custom_handler()
+# sgtk.LogManager().global_debug = False
+# # Create a ShotgunAuthenticator object
+# sa = sgtk.authentication.ShotgunAuthenticator()
+# # Use the ShotgunAuthenticator to create a user object
+# user = sa.create_script_user(api_script=SGHS_NAME,
+#                              api_key=SGHS_KEY,
+#                              host=os.environ['SG_ED_SITE_URL'])
+# # Authenticate
+# sgtk.set_authenticated_user(user)
+# # Now we are set up for bootstrapping the engine in various contexts, handled per-callback
 
 # Whether to capture the last event, and where to put it. Edit in shothammer_config.yml
 CAPTURE_LAST_EVENT = config['shothammer']['CAPTURE_LAST_EVENT']
@@ -86,9 +86,9 @@ def shothammer(sg, logger, event, args):
     if CAPTURE_LAST_EVENT:
         capture_event(event, LAST_EVENT_FILE)
 
-    # only process events from projects in the allowed list
+    # only process events from projects in the allowed list if it exists
     path = None
-    if get_project_id(event) in SGHS_PROJECTS:
+    if SGHS_PROJECTS is None or get_project_id(event) in SGHS_PROJECTS:
         path = bootstrap_engine_to_shot_path(logger, event)
 
     logger.debug("Path: %s" % path)
@@ -152,9 +152,7 @@ def bootstrap_engine_to_shot_path(logger, event) -> str:
     #project_id = event['project']['id']
 
     # Use the existing sgtk auth user to get a manager
-    manager = sgtk.bootstrap.ToolkitManager(sgtk.get_authenticated_user())
-    # This plugin_id must be configured so we get the appropriate per-project config
-    manager.plugin_id = "sghs."
+    manager = initialize_shotgrid_manager()
     logger.debug("Manager object:\n%s" % str(manager))
 
     logger.debug("Trying to bootstrap shot ID %s" % shot_id)
@@ -287,6 +285,75 @@ def get_project_id(event) -> int:
     return event['project']['id']
 
 
-def get_object_type_from_event(event):
+def get_entity_type_from_event(event):
     """Eat an event, return 'Shot', 'Sequence', or 'Task'"""
     return event['meta']['entity_type']
+
+
+def get_paths_from_event(logger, event):
+    manager = initialize_shotgrid_manager()
+    # Figure out what object type event relates to: Shot, Sequence, Task
+    entity_type = get_entity_type_from_event(event)
+    entity_id = event['entity']['id']
+    # bootstrap should use the config dict to return a list of paths depending on object type
+    template_names = config['shothammer']['SGHS_PATH_TEMPLATES'][entity_type]
+
+    # bootstrap using the type name and id from the event
+    engine = manager.bootstrap_engine("tk-shell", entity={"type": entity_type, "id": entity_id})
+
+    # get template objects from names now that we have an engine
+    templates = [engine.sgtk.templates[t] for t in template_names]
+    import tank.errors
+
+    # set up filters and fields we want back from the query
+    filters = [["id", "is", entity_id]]
+    if entity_type is not "Task":
+        fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
+    else:
+        fields = ["id", "type", "entity", "project", "step", "template_task", "content"]
+
+    # get the full object
+    full_obj = engine.shotgun.find_one(entity_type, filters=filters, fields=fields)
+    print("Full object: %s" % str(full_obj))
+
+    if entity_type == "Shot":
+        # Get enough data to fill shot templates
+        Shot = full_obj['code']
+        Sequence = full_obj['sg_sequence']['name']
+        # loop through and fill them, returning a list of paths
+        return [t.apply_fields({'Shot': Shot,
+                               'Sequence': Sequence
+                                })
+                for t in templates]
+    elif entity_type == "Sequence":
+        # Get enough data to fill sequence templates
+        # loop through and fill them, returning a list of paths
+        pass
+    elif entity_type == "Task":
+        pass
+    else:
+        logger.warning("Entity type %s can't be handled" % entity_type)
+        return None
+
+def initialize_shotgrid_manager():
+    # Re-bootstrap the engine in the correct user and plugin id
+    manager = sgtk.bootstrap.ToolkitManager(sgtk.get_authenticated_user())
+    manager.plugin_id = "sghs."
+    return manager
+
+def authenticate_sgtk_user():
+    # Initial sgtk auth
+    sgtk.LogManager().initialize_custom_handler()
+    sgtk.LogManager().global_debug = False
+    # Create a ShotgunAuthenticator object
+    sa = sgtk.authentication.ShotgunAuthenticator()
+    # Use the ShotgunAuthenticator to create a user object
+    user = sa.create_script_user(api_script=SGHS_NAME,
+                                 api_key=SGHS_KEY,
+                                 host=os.environ['SG_ED_SITE_URL'])
+    # Authenticate
+    sgtk.set_authenticated_user(user)
+    # Now we are set up for bootstrapping the engine in various contexts, handled per-callback
+
+# Do this so that sgtk has a working authenticated user for later bootstrapping
+authenticate_sgtk_user()

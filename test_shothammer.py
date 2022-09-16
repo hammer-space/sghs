@@ -204,15 +204,41 @@ class TestMultipleObjectTypes(TestCase):
 
     def test_get_object_type_from_event_shot(self):
         target = 'Shot'
-        result = shothammer.get_object_type_from_event(self.sghs_event_shot)
+        result = shothammer.get_entity_type_from_event(self.sghs_event_shot)
         self.assertEqual(target, result)
 
     def test_get_object_type_from_event_sequence(self):
         target = 'Sequence'
-        result = shothammer.get_object_type_from_event(self.sghs_event_sequence)
+        result = shothammer.get_entity_type_from_event(self.sghs_event_sequence)
         self.assertEqual(target, result)
 
     def test_get_object_type_from_event_task(self):
         target = 'Task'
-        result = shothammer.get_object_type_from_event(self.sghs_event_task)
+        result = shothammer.get_entity_type_from_event(self.sghs_event_task)
         self.assertEqual(target, result)
+
+    def test_bootstrap_engine_to_shot_paths(self):
+        """Given an event about a shot tag change, return a list of filled out templates"""
+        target_paths = ["H:\\Animation\\sequences\\bunny_010\\bunny_010_0020\\PDF",
+                        "H:\\Animation\\sequences\\bunny_010\\bunny_010_0020\\Pictures",
+                        ]
+        result_paths = shothammer.get_paths_from_event(logger, self.sghs_event_shot)
+        self.assertEqual(target_paths, result_paths)
+
+    def test_bootstrap_engine_to_sequence_paths(self):
+        """Given an event about a sequence tag change, return a list of filled out templates"""
+        target_paths = ["H:\\Animation\\sequences\\bunny_010",
+                        "H:\\Animation\\sequences\\ALT\\bunny_010",
+                        ]
+        result_paths = shothammer.get_paths_from_event(logger, self.sghs_event_sequence)
+        self.assertEqual(target_paths, result_paths)
+
+    def test_bootstrap_engine_to_task_paths(self):
+        """Given an event about a task tag change, return a list of filled out templates"""
+        # task_template_1: sequences / {Sequence} / {Shot} / {Step} / {task_name}
+        # task_template_2: sequences / ALT / {Sequence} / {Shot} / zip
+        target_paths = ["H:\\Animation\\sequences\\bunny_010\\bunny_010_0020\\",
+                        "H:\\Animation\\sequences\\ALT\\bunny_010",
+                        ]
+        result_paths = shothammer.get_paths_from_event(logger, self.sghs_event_task)
+        self.assertEqual(target_paths, result_paths)
