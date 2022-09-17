@@ -291,13 +291,14 @@ def get_entity_type_from_event(event):
 
 
 def get_paths_from_event(logger, event):
+    print(event)
     manager = initialize_shotgrid_manager()
     # Figure out what object type event relates to: Shot, Sequence, Task
     entity_type = get_entity_type_from_event(event)
     entity_id = event['entity']['id']
     # bootstrap should use the config dict to return a list of paths depending on object type
     template_names = config['shothammer']['SGHS_PATH_TEMPLATES'][entity_type]
-
+    print('Entity id, type: (%s, %s)' % (entity_id, entity_type))
     # bootstrap using the type name and id from the event
     engine = manager.bootstrap_engine("tk-shell", entity={"type": entity_type, "id": entity_id})
 
@@ -307,6 +308,7 @@ def get_paths_from_event(logger, event):
 
     # set up filters and fields we want back from the query
     filters = [["id", "is", entity_id]]
+    # TODO: does it make more sense to just have a single list of every field we could ever want?
     if entity_type is not "Task":
         fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
     else:
@@ -322,15 +324,45 @@ def get_paths_from_event(logger, event):
         Sequence = full_obj['sg_sequence']['name']
         # loop through and fill them, returning a list of paths
         return [t.apply_fields({'Shot': Shot,
-                               'Sequence': Sequence
+                                'Sequence': Sequence
                                 })
                 for t in templates]
     elif entity_type == "Sequence":
         # Get enough data to fill sequence templates
+        Sequence = full_obj['code']
         # loop through and fill them, returning a list of paths
-        pass
+        return [t.apply_fields({'Sequence': Sequence,
+                                })
+                for t in templates]
     elif entity_type == "Task":
-        pass
+        # Get enough data to fill task templates
+
+        # get step shortname ({Step} in a path template)
+        step = engine.shotgun.find_one("Step", [['code', 'is', full_obj['step']['name']]], ["code", "short_name"])
+        step_shortname = step['short_name']
+        # print("Step short_name: %s" % step_shortname)
+
+        # get task name ({task_name})
+        task_name = full_obj['content']
+        # print("task_name: %s" % task_name)
+
+        # get Shot from Task
+        fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
+        related_shot = engine.shotgun.find_one("Shot", [['id', 'is', full_obj['entity']['id']]], fields)
+        print("Task-related shot: %s" % related_shot)
+        shot_code = related_shot['code']
+        print("Shot code: %s" % shot_code)
+
+        # get Sequence from Shot
+        related_sequence = related_shot['sg_sequence']['name']
+        print("Task-related sequence code: %s" % related_sequence)
+
+        return [t.apply_fields({'Sequence': related_sequence,
+                                'Shot': shot_code,
+                                'Step': step_shortname,
+                                'task_name': task_name,
+                                })
+                for t in templates]
     else:
         logger.warning("Entity type %s can't be handled" % entity_type)
         return None
