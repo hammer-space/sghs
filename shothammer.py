@@ -11,15 +11,15 @@ from datetime import datetime
 # Read config and set up global auth variables
 with open('shothammer_config.yml') as F:
     config = yaml.load(F, Loader=yaml.FullLoader)
-SGHS_NAME = config['shothammer']['SGHS_NAME']
-SGHS_KEY = config['shothammer']['SGHS_KEY']
+SGHS_NAME = config['SGHS_NAME']
+SGHS_KEY = config['SGHS_KEY']
 
 # Set up project and tag filters
-SGHS_PROJECTS = config['shothammer']['SGHS_PROJECTS']
-SGHS_TAG_NAMESPACE = config['shothammer']['SGHS_TAG_NAMESPACE']
+SGHS_PROJECTS = config['SGHS_PROJECTS']
+SGHS_TAG_NAMESPACE = config['SGHS_TAG_NAMESPACE']
 
 # Vanilla sgtk needed for auth so that we can get a context-specific engine
-sys.path.insert(0, config['shothammer']['SG_TOOLKIT'])
+sys.path.insert(0, config['SG_TOOLKIT'])
 import sgtk
 import tank.errors
 
@@ -37,8 +37,8 @@ import tank.errors
 # # Now we are set up for bootstrapping the engine in various contexts, handled per-callback
 
 # Whether to capture the last event, and where to put it. Edit in shothammer_config.yml
-CAPTURE_LAST_EVENT = config['shothammer']['CAPTURE_LAST_EVENT']
-LAST_EVENT_FILE = config['shothammer']['LAST_EVENT_FILE']
+CAPTURE_LAST_EVENT = config['CAPTURE_LAST_EVENT']
+LAST_EVENT_FILE = config['LAST_EVENT_FILE']
 
 # global pretty printer
 PP = pprint.PrettyPrinter(indent=2)
@@ -163,7 +163,7 @@ def bootstrap_engine_to_shot_path(logger, event) -> str:
 
     # use the work_shot_area_template from the engine-specific sgtk
     # TODO: figure out the name of the template we want and use that
-    work_shot_area_template = engine.sgtk.templates[config['shothammer']['SGHS_PATH_TEMPLATE']]
+    work_shot_area_template = engine.sgtk.templates[config['SGHS_PATH_TEMPLATE']]
     logger.debug("work_shot_area_template: %s" % str(work_shot_area_template))
 
     # set up filters and fields to pass to find_one so we get the right dict
@@ -296,7 +296,7 @@ def get_paths_from_event(logger, event):
     entity_type = get_entity_type_from_event(event)
     entity_id = event['entity']['id']
     # bootstrap should use the config dict to return a list of paths depending on object type
-    template_names = config['shothammer']['SGHS_PATH_TEMPLATES'][entity_type]
+    template_names = config['SGHS_PATH_TEMPLATES'][entity_type]
     # bootstrap using the type name and id from the event
     engine = manager.bootstrap_engine("tk-shell", entity={"type": entity_type, "id": entity_id})
 

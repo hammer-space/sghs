@@ -35,7 +35,7 @@ class TestShotHammerFileAccess(TestCase):
         self.test_tag = config['test']['TEST_TAG']
         self.test_value = config['test']['TEST_VALUE']
         self.test_keyword = config['test']['TEST_KEYWORD']
-        self.project_filter = config['shothammer']['SGHS_PROJECTS']
+        self.project_filter = config['SGHS_PROJECTS']
 
     def setUp(self):
         # make a test file in the root of the mount
@@ -103,7 +103,7 @@ class TestShotHammerFileAccess(TestCase):
 class TestShotHammerEventFilter(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerEventFilter, self).__init__(*args, **kwargs)
-        self.project_filter = config['shothammer']['SGHS_PROJECTS']
+        self.project_filter = config['SGHS_PROJECTS']
         with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event = pickle.load(F)
         self.logger = logger
