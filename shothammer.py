@@ -291,14 +291,12 @@ def get_entity_type_from_event(event):
 
 
 def get_paths_from_event(logger, event):
-    print(event)
     manager = initialize_shotgrid_manager()
     # Figure out what object type event relates to: Shot, Sequence, Task
     entity_type = get_entity_type_from_event(event)
     entity_id = event['entity']['id']
     # bootstrap should use the config dict to return a list of paths depending on object type
     template_names = config['shothammer']['SGHS_PATH_TEMPLATES'][entity_type]
-    print('Entity id, type: (%s, %s)' % (entity_id, entity_type))
     # bootstrap using the type name and id from the event
     engine = manager.bootstrap_engine("tk-shell", entity={"type": entity_type, "id": entity_id})
 
@@ -309,14 +307,13 @@ def get_paths_from_event(logger, event):
     # set up filters and fields we want back from the query
     filters = [["id", "is", entity_id]]
     # TODO: does it make more sense to just have a single list of every field we could ever want?
-    if entity_type is not "Task":
+    if entity_type != "Task":
         fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
     else:
         fields = ["id", "type", "entity", "project", "step", "template_task", "content"]
 
     # get the full object
     full_obj = engine.shotgun.find_one(entity_type, filters=filters, fields=fields)
-    print("Full object: %s" % str(full_obj))
 
     if entity_type == "Shot":
         # Get enough data to fill shot templates
@@ -349,13 +346,10 @@ def get_paths_from_event(logger, event):
         # get Shot from Task
         fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
         related_shot = engine.shotgun.find_one("Shot", [['id', 'is', full_obj['entity']['id']]], fields)
-        print("Task-related shot: %s" % related_shot)
         shot_code = related_shot['code']
-        print("Shot code: %s" % shot_code)
 
         # get Sequence from Shot
         related_sequence = related_shot['sg_sequence']['name']
-        print("Task-related sequence code: %s" % related_sequence)
 
         return [t.apply_fields({'Sequence': related_sequence,
                                 'Shot': shot_code,

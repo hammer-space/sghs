@@ -237,8 +237,8 @@ class TestMultipleObjectTypes(TestCase):
         """Given an event about a task tag change, return a list of filled out templates"""
         # task_template_1: sequences / {Sequence} / {Shot} / {Step} / {task_name}
         # task_template_2: sequences / ALT / {Sequence} / {Shot} / zip
-        target_paths = ["H:\\Animation\\sequences\\bunny_010\\bunny_010_0020\\",
-                        "H:\\Animation\\sequences\\ALT\\bunny_010",
+        target_paths = ["H:\\Animation\\sequences\\bunny_010\\bunny_010_0010\\ANM\\Animation",
+                        "H:\\Animation\\sequences\\ALT\\bunny_010\\bunny_010_0010\\zip",
                         ]
         result_paths = shothammer.get_paths_from_event(logger, self.sghs_event_task)
         self.assertEqual(target_paths, result_paths)
