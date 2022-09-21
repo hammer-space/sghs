@@ -28,7 +28,6 @@ shothammer:
       - task_template_1
       - task_template_2
 
-
 test:
   # A Hammerspace mount you can test on
   HS_MOUNT: H:/

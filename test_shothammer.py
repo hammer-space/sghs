@@ -21,7 +21,6 @@ with open('shothammer_config.yml') as F:
     config = yaml.load(F, Loader=yaml.FullLoader)
 HS_MOUNT = config['test']['HS_MOUNT']
 sys.path.insert(0, config['test']['TK_CORE_PYTHON_PATH'])
-# import tank.errors
 
 
 class TestShotHammerFileAccess(TestCase):
@@ -188,21 +187,6 @@ class TestMultipleObjectTypes(TestCase):
         with open('sghs_event_task.pickle', 'rb') as F3:
             self.sghs_event_task = pickle.load(F3)
         self.logger = logger
-
-    def test_get_object_type_from_event_shot(self):
-        target = 'Shot'
-        result = shothammer.get_entity_type_from_event(self.sghs_event_shot)
-        self.assertEqual(target, result)
-
-    def test_get_object_type_from_event_sequence(self):
-        target = 'Sequence'
-        result = shothammer.get_entity_type_from_event(self.sghs_event_sequence)
-        self.assertEqual(target, result)
-
-    def test_get_object_type_from_event_task(self):
-        target = 'Task'
-        result = shothammer.get_entity_type_from_event(self.sghs_event_task)
-        self.assertEqual(target, result)
 
     def test_bootstrap_engine_to_shot_paths(self):
         """Given an event about a shot tag change, return a list of filled out templates"""

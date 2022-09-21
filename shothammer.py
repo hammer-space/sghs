@@ -126,86 +126,6 @@ def remove_tags(logger, event, path) -> None:
         hs_keyword_delete(path, tag, recursive=False, logger=logger)
 
 
-# def bootstrap_engine_to_shot_path(logger, event) -> str:
-#     """
-#     Get the shot_id from the event, and use that to bootstrap to a project-specific engine
-#     that can access the template and configuration needed to return a full path to the shot
-#
-#     :param logger:
-#     :param event:
-#     :return:
-#     """
-#     shot_id = event['entity']['id']
-#
-#     # Use the existing sgtk auth user to get a manager
-#     manager = initialize_shotgrid_manager()
-#     logger.debug("Manager object:\n%s" % str(manager))
-#
-#     logger.debug("Trying to bootstrap shot ID %s" % shot_id)
-#     engine = manager.bootstrap_engine("tk-shell", entity={"type": "Shot", "id": shot_id})
-#     logger.debug("Engine object:\n%s" % str(engine))
-#     # import now that we have bootstrapped an entity-specific sgtk
-#     import tank.errors
-#
-#     # use the work_shot_area_template from the engine-specific sgtk
-#     # TODO: figure out the name of the template we want and use that
-#     work_shot_area_template = engine.sgtk.templates[config['SGHS_PATH_TEMPLATE']['Shot'][0]]
-#     logger.debug("work_shot_area_template: %s" % str(work_shot_area_template))
-#
-#     # set up filters and fields to pass to find_one so we get the right dict
-#     filters = [["id", "is", shot_id]]
-#     fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
-#     full_shot = engine.shotgun.find_one("Shot", filters=filters, fields=fields)
-#     logger.debug("Full shot: %s" % str(full_shot))
-#
-#     try:
-#         Shot = full_shot['code']
-#     except TypeError as e:
-#         logger.warning("TypeError trying to get Shot from full_shot: %s" % repr(e))
-#         Shot = None
-#     try:
-#         Sequence = full_shot['sg_sequence']['name']
-#     except TypeError as e:
-#         logger.warning("TypeError trying to get Sequence from full_shot: %s" % repr(e))
-#         Sequence = None
-#     try:
-#         Episode = full_shot['sg_episode']['name']
-#     except TypeError as e:
-#         logger.warning("TypeError trying to get Episode from full_shot: %s" % repr(e))
-#         Episode = None
-#     except KeyError as e:
-#         logger.warning("KeyError trying to get Episode from full_shot: %s" % repr(e))
-#         Episode = ''
-#
-#     # compose a dict and feed it to apply_fields to get a path
-#     print("Shot: %s" % Shot)
-#     print("Sequence: %s" % Sequence)
-#     print("Episode: %s" % Episode)
-#     try:
-#         result = work_shot_area_template.apply_fields({'Shot':Shot,
-#                                                        'Sequence':Sequence,
-#                                                        # 'Episode': Episode,
-#                                                        })
-#         logger.debug("Full path: %s" % result)
-#     except tank.errors.TankError as e:
-#         # We didn't get a valid path for some reason, likely because we couldn't complete the template provided
-#         result = None
-#         msg = str(e)
-#         # Use the timestamp on the event itself
-#         event_time = event['created_at']
-#         date_string = event_time.strftime("%Y-%m-%d_%H-%M-%S")
-#         # filename includes the shot_id and the timestamp of the event
-#         filename = "shot_id-%s-%s.pickle" % (shot_id, date_string)
-#         logger.error("Unable to apply all required fields, saving event as %s\nException message: %s"
-#                      % (filename, msg))
-#         # save a pickle of the event for later analysis
-#         capture_event(event, filename)
-#
-#     # clean up the engine before returning
-#     engine.destroy()
-#     return result
-
-
 def hs_tag_set(path, tag, value, recursive=True) -> None:
     if recursive:
         cmd = 'hs tag set -r -e \'%s\' %s %s' % (value, tag, path)
@@ -271,15 +191,15 @@ def get_project_id(event) -> int:
     return event['project']['id']
 
 
-def get_entity_type_from_event(event):
-    """Eat an event, return 'Shot', 'Sequence', or 'Task'"""
-    return event['meta']['entity_type']
-
+# def get_entity_type_from_event(event):
+#     """Eat an event, return 'Shot', 'Sequence', or 'Task'"""
+#     return event['meta']['entity_type']
+#
 
 def get_paths_from_event(logger, event):
     manager = initialize_shotgrid_manager()
     # Figure out what object type event relates to: Shot, Sequence, Task
-    entity_type = get_entity_type_from_event(event)
+    entity_type = event['meta']['entity_type']
     entity_id = event['entity']['id']
     # bootstrap should use the config dict to return a list of paths depending on object type
     template_names = config['SGHS_PATH_TEMPLATES'][entity_type]
@@ -288,7 +208,7 @@ def get_paths_from_event(logger, event):
 
     # get template objects from names now that we have an engine
     templates = [engine.sgtk.templates[t] for t in template_names]
-    import tank.errors
+    # import tank.errors
 
     # set up filters and fields we want back from the query
     filters = [["id", "is", entity_id]]
@@ -319,15 +239,12 @@ def get_paths_from_event(logger, event):
                 for t in templates]
     elif entity_type == "Task":
         # Get enough data to fill task templates
-
         # get step shortname ({Step} in a path template)
         step = engine.shotgun.find_one("Step", [['code', 'is', full_obj['step']['name']]], ["code", "short_name"])
         step_shortname = step['short_name']
-        # print("Step short_name: %s" % step_shortname)
 
         # get task name ({task_name})
         task_name = full_obj['content']
-        # print("task_name: %s" % task_name)
 
         # get Shot from Task
         fields = ["id", "type", "code", "sg_episode", "sg_sequence"]
