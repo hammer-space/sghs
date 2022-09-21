@@ -21,7 +21,7 @@ with open('shothammer_config.yml') as F:
     config = yaml.load(F, Loader=yaml.FullLoader)
 HS_MOUNT = config['test']['HS_MOUNT']
 sys.path.insert(0, config['test']['TK_CORE_PYTHON_PATH'])
-import tank.errors
+# import tank.errors
 
 
 class TestShotHammerFileAccess(TestCase):
@@ -114,24 +114,24 @@ class TestShotHammerEventFilter(TestCase):
 
     @patch('shothammer.remove_tags')
     @patch('shothammer.add_tags')
-    @patch('shothammer.bootstrap_engine_to_shot_path')
-    def test_filtered_event_calls_bootstrap(self, mock_bootstrap, mock_add_tags, mock_remove_tags):
+    @patch('shothammer.get_paths_from_event')
+    def test_filtered_event_calls_get_paths(self, mock_get_paths, mock_add_tags, mock_remove_tags):
         original_projects = shothammer.SGHS_PROJECTS
         shothammer.SGHS_PROJECTS = [952, 122]
         shothammer.shothammer(None, self.logger, self.event, None)
         shothammer.SGHS_PROJECTS = original_projects
-        self.assertTrue(mock_bootstrap.called)
+        self.assertTrue(mock_get_paths.called)
 
 
     @patch('shothammer.remove_tags')
     @patch('shothammer.add_tags')
-    @patch('shothammer.bootstrap_engine_to_shot_path')
-    def test_filtered_event_does_not_call_bootstrap(self, mock_bootstrap, mock_add_tags, mock_remove_tags):
+    @patch('shothammer.get_paths_from_event')
+    def test_filtered_event_does_not_call_get_paths(self, mock_get_paths, mock_add_tags, mock_remove_tags):
         original_projects = shothammer.SGHS_PROJECTS
         shothammer.SGHS_PROJECTS = [100, 101]
         shothammer.shothammer(None, self.logger, self.event, None)
         shothammer.SGHS_PROJECTS = original_projects
-        self.assertFalse(mock_bootstrap.called)
+        self.assertFalse(mock_get_paths.called)
 
 
 class TestShotHammerEventProcessing(TestCase):
@@ -156,19 +156,6 @@ class TestShotHammerEventProcessing(TestCase):
         target_project_id = 952
         result = shothammer.get_project_id(self.event)
         self.assertEqual(result, target_project_id)
-
-
-class TestShotHammerBootstrapping(TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestShotHammerBootstrapping, self).__init__(*args, **kwargs)
-        with open('sghs_event_shot_tag_add_862.pickle', 'rb') as F:
-            self.event_862 = pickle.load(F)
-        self.logger = logger
-
-    def test_get_directory_event_862_success(self):
-        target_path = "H:\\Animation\\sequences\\bunny_010\\bunny_010_0010"
-        result_path = shothammer.bootstrap_engine_to_shot_path(self.logger, self.event_862)
-        self.assertEqual(target_path, result_path)
 
 
 class TestShotHammerIntegration(TestCase):
