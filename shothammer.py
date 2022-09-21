@@ -40,6 +40,8 @@ def registerCallbacks(reg):
     # removed tags will be removed recursively
     eventFilter = {
         'Shotgun_Shot_Change': ['tags'],
+        'Shotgun_Sequence_Change': ['tags'],
+        'Shotgun_Task_Change': ['tags'],
     }
     reg.registerCallback(
         SGHS_NAME,
