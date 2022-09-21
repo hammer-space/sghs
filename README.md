@@ -80,15 +80,17 @@ Shothammer is a shotgunEvents plugin that can respond to status change events by
 custom metadata on files and directories. This metadata can be used to drive data placement and location
 using SmartObjectives on a Hammerspace Global Data Environment.
 
-Currently, shothammer.py watches for tags added to or removed from shots in Shotgrid. When 
-it sees tags in the allowed namespace (currently tags named `SGHS_*`) it adds them as
-Hammerspace keywords to the root of the shot folder on disk. The tag schema is controlled in Shotgrid,
-and they are passed through directly as keywords.
+Currently, shothammer.py watches for tags added to or removed from Shots, Sequences, or Tasks in Shotgrid. When 
+it sees tags in the allowed namespace (currently tags named `SGHS_*`) it adds them as Hammerspace keywords to the root 
+of the specified template folders on a Hammerspace file system. The tag schema is controlled in Shotgrid,
+and the tag names are passed through directly as Hammerspace keywords.
 
-It finds the shot folder by using a per-project Pipeline Configuration fed to it by Shotgrid. This config can be specified
-in Shotgrid by adding the plugin id `sghs.` to the specific pipeline configuration for the project.
+It finds the appropriate folder(s) by using a per-project Pipeline Configuration containing path templates fed to it by 
+Shotgrid. This config can be specified in Shotgrid by adding the plugin id `sghs.` to the specific pipeline 
+configuration for the project.
 
-Shothammer requests the template specified in `shothammer_config.ini` as `SGHS_PATH_TEMPLATE`.
+Shothammer requests the templates specified in `shothammer_config.yml` under the appropriate object name in the 
+`SGHS_PATH_TEMPLATES` dictionary.
 
 sghs is intended to grow as a package over time with multiple plugin modules that do different things with Shotgrid's
 events or webhooks.
@@ -126,20 +128,22 @@ will require some configuration depending on paths and pipeline configuration na
 
 ### Configuration
 
-1. Adjust shothammer_config.ini to fit environment (paths, fixing namespace overlap, etc.)
-2. Copy or hard link shothammer_config.ini to shotgunEvents working directory 
-3. One or more Hammerspace clusters set up with keyword-based objectives to drive data placement (e.g. `IF HAS_KEYWORD("SGHS_LOCATION")`)
+1. Adjust shothammer_config.yml to fit environment (paths, fixing namespace overlap, etc.)
+2. Copy or link shothammer_config.yml to shotgunEvents working directory 
+3. One or more Hammerspace clusters set up with keyword-based objectives to drive data placement 
+(e.g. `IF HAS_KEYWORD("SGHS_LOCATION") THEN {SLO('place-on-local-volumes)}`)
 
 ### Troubleshooting
 
-Given the appropriate values in shothammer_config.ini, the tests in test_shothammer.py should pass. If the plugin gets
+Given the appropriate values in shothammer_config.yml, the tests in test_shothammer.py should pass. If the plugin gets
 disabled by shotgunEvents then there is a fatal problem somewhere. Running the tests using nose/pytest/your favorite IDE
 should give enough details to show what is broken. [Open an issue](https://github.com/mabott/sghs/issues) with details 
 and someone will try to help.
 
 #### Things to check:
-1. Make sure hstk is installed in the same environment running shotgunEvents.
-2. Make sure the authentication information for Shotgrid is complete, both name and application key, for the shotgunEvents config as well as the shothammer config.
+1. Make sure hstk is installed in the same environment (venv, preferrably) running shotgunEvents.
+2. Make sure the authentication information for Shotgrid is complete, both name and application key, for the 
+shotgunEvents config as well as the shothammer config.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -147,17 +151,25 @@ and someone will try to help.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Once the plugin has been added to a ShotgunEvents server, it will recognize Tag Change events on Shots and act accordingly. Before anything can happen, you need to perform a little more configuration of Shotgrid and Hammerspace.
+Once the plugin has been added to a ShotgunEvents server, it will recognize Tag Change events on Shots, Sequences, or 
+Tasks and act accordingly. Before anything can happen, you need to perform a little more configuration of Shotgrid and 
+Hammerspace.
 
-Add SGHS-specific tags to your Shotgrid Tags via the admin menu. Click on your user portrait in the upper right and scroll down a bit):
+Add SGHS-specific tags to your Shotgrid Tags via the admin menu. Click on your user portrait in the upper right and 
+scroll down a bit):
 
 ![image info](./images/add_tags_01.jpg)
 
-Click the Add Tag button in the upper left and add a tag in the text field of the dialog box that pops up. By default, we want to use tags in the SGHS_ namespace, but this can be modified in the plugin config.
+Click the Add Tag button in the upper left and add a tag in the text field of the dialog box that pops up. By default, 
+we want to use tags in the SGHS_ namespace, but this can be modified in the plugin config.
 
 ![image info](./images/add_tags_02.jpg)
 
-On your Hammerspace clusters, create Hammerspace Objectives on all sites that look for Keywords (a flavor of Hammerspace metadata) that match the Tags you added to Shotgrid. For example, on a Site called AZ you could make an Objective called `local-if-keyword-az`:
+On your Hammerspace clusters, create Hammerspace Objectives on all sites that look for Keywords (a flavor of 
+Hammerspace metadata) that match the Tags you added to Shotgrid. For example, on a Site called AZ you could make an 
+Objective called `local-if-keyword-az`, expressing "If a file is in the live tree (i.e. not in a snapshot) and either 
+it or a parent has the Hammerspace Keyword "SGHS_AZ" then instantiate this file on a volume in the Hammerspace Volume 
+Group called `local-volumes`":
 
     IF (IS_LIVE && HAS_KEYWORD("SGHS_AZ")) 
     THEN {SLO('place-on-local-volumes')}
@@ -175,16 +187,23 @@ View a list of shots in Shotgrid (Project->Shots Tab) and enable viewing of the 
 ![image info](./images/tag_add_02.jpg)
 ![image info](./images/tag_add_03.jpg)
 
-Check the Remote status and Alignment of a shot's directory. The directory path is determined by the value of `SGHS_PATH_TEMPLATE` in `shothammer_config.ini`, set to "work_shot_area" in the template, or "shot_root" in the [default shotgrid toolkit config](https://github.com/shotgunsoftware/tk-config-default2). If there are no local file instances in the path you are observing, you will see Remote Yes and Green alignment for files, meaning that all Objectives have been satisfied.
+Check the Remote status and Alignment of a shot's directories. The directory paths are determined by the value of 
+`SGHS_PATH_TEMPLATES['Shot']` in `shothammer_config.yml`, which might be something like "shot_root" in the 
+[default shotgrid toolkit config](https://github.com/shotgunsoftware/tk-config-default2). If there are no local file 
+instances in the path you are observing, you will see Remote Yes and Green alignment for files, meaning that all 
+Objectives have been satisfied.
 
 ![image info](./images/hs_webui_01.jpg)
 
-Set a tag on a shot that matches the Keyword the Objective is looking for:
+Set a tag on a Shot that matches the Keyword the Objective is looking for:
 
 ![image info](./images/set_tag_01.jpg)
 ![image info](./images/set_tag_02.jpg)
 
-The plugin will set the keyword on the file system at the top level directory for the shot, causing the AZ system to recognize it needs some local data instances and request them from HQ. You can observe this by looking at the same path. Alignment will be Yellow while data is transferring, and once a file has been transferred it will be Remote Yes(cached), and Alignment will be green again, meaning that the shot now has local data instances in AZ.
+The plugin will set the keyword on the file system at the top level directory for the shot, causing the AZ system to 
+recognize it needs some local data instances and request them from HQ. You can observe this by looking at the same 
+path. Alignment will be Yellow while data is transferring, and once a file has been transferred it will be Remote 
+Yes(cached), and Alignment will be green again, meaning that the shot now has local data instances in AZ.
 
 ![image info](./images/hs_webui_02.jpg)
 ![image info](./images/hs_webui_03.jpg)
@@ -198,10 +217,10 @@ Access to these files on the AZ Hammerspace cluster will now be local access, in
 
 - [ ] Reduce the weight of the recommended boilerplate pipeline config
 - [ ] Find a path for more Shotgrid objects (currently just shots)
-    - [ ] Sequences
+    - [X] Sequences
     - [ ] Episodes
     - [ ] Specific assets
-    - [ ] Tasks
+    - [X] Tasks
 
 
 See the [open issues](https://github.com/mabott/sghs/issues) for a full list of proposed features (and known issues).
@@ -242,7 +261,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Mike Bott, Principal Systems Engineer - [@mabott](https://twitter.com/mabott) - mike.bott@hammerspace.com
 
-Project Link: [https://github.com/mabott/sghs](https://github.com/mabott/sghs)
+Project Link: [https://github.com/hammer-space/sghs](https://github.com/hammer-space/sghs)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -255,10 +274,12 @@ This project wouldn't exist without these folks' contributions:
 
 * [Jeremy Smith](mailto:jeremy.smith@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/) 
 for his technical vision, guidance, and support
-* [Dan Hutchinson](dan.hutchinson@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/)
+* [Dan Hutchinson](dan.hutchinson@jellyfishpictures.co.uk) formerly of [Jellyfish Pictures](https://jellyfishpictures.co.uk/)
 for timely application of his Python and Shotgrid knowledge
-* [Natasha Kelkar](natasha.kelkar@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/) for technical direction-setting, Python skills, deep Shotgrid knowledge, and steering me away from several dead ends.
-* Our excellent crew at [Hammerspace](https://hammerspace.com/) for developing cool storage technology that solves interesting distributed storage problems
+* [Natasha Kelkar](natasha.kelkar@jellyfishpictures.co.uk) of [Jellyfish Pictures](https://jellyfishpictures.co.uk/) 
+for technical direction-setting, Python skills, deep Shotgrid knowledge, and steering me away from several dead ends.
+* Our excellent crew at [Hammerspace](https://hammerspace.com/) for developing cool storage technology that solves 
+interesting distributed storage problems
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
