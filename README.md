@@ -117,13 +117,15 @@ will require some configuration depending on paths and pipeline configuration na
 
 1. [Shotgrid API](https://github.com/shotgunsoftware/python-api) installed and configured 
 2. [Shotgrid event daemon](https://github.com/shotgunsoftware/shotgunEvents) installed and configured
-3. [Hammerspace Toolkit](https://github.com/hammer-space/hstk) (hstk) installed: `$ pip install hstk`
+3. [Hammerspace Toolkit](https://github.com/hammer-space/hstk) (hstk) installed: `$ pip install hstk`, though this will 
+also be taken care of when installing Python requirements below.
 4. Hammerspace file system mounted
 
 ### Installation
 
 1. Clone this repository `git clone https://github.com/mabott/sghs.git`
-2. Copy or hard link shothammer.py to your shotgunEvents plugin directory.
+2. Copy or link shothammer.py to your shotgunEvents plugin directory, specified in `shotgunEventDaemon.conf` as one of 
+potentially several `paths` in the `[plugins]` section.
 3. Install requirements `pip install -r requirements.txt`
 
 ### Configuration
@@ -141,7 +143,7 @@ should give enough details to show what is broken. [Open an issue](https://githu
 and someone will try to help.
 
 #### Things to check:
-1. Make sure hstk is installed in the same environment (venv, preferrably) running shotgunEvents.
+1. Make sure hstk is installed in the same environment (venv, preferably) running shotgunEvents.
 2. Make sure the authentication information for Shotgrid is complete, both name and application key, for the 
 shotgunEvents config as well as the shothammer config.
 
