@@ -1,32 +1,32 @@
 # Copy or this file to shothammer_config.yml and edit it appropriately
-# symlink it alongside shotgunEventDaemon.py since it will be read in that context
-shothammer:
-  # This is the name and key used to identify this plugin to Shotgrid.
-  # Create one in Shotgrid via Admin->Scripts, Add Script
-  # Name and Key must match or the plugin won't work
-  SGHS_NAME: sghs
-  SGHS_KEY: yoursecretkeyfullofrandomcharactersfromshotgrid
-  # Set to true if you want to serialize and save events
-  CAPTURE_LAST_EVENT: True
-  LAST_EVENT_FILE: sghs_event.pickle
-  # The location of the python directory from a shotgun pipeline toolkit tk-core folder
-  SG_TOOLKIT: C:/shotgrid-hammerspace/tk-core/python
-  # Comma-separated list of project ids that we want to process. Leave blank for all projects.
-  SGHS_PROJECTS: 70
-  # Tag prefix for filtering, only change if you have a namespace collision
-  SGHS_TAG_NAMESPACE: SGHS_
-  # Directory path default template name if you only have one shot template
-  SGHS_PATH_TEMPLATE: shot_root
-  SGHS_PATH_TEMPLATES:
-    Shot:
-      - shot_template_1
-      - shot_template_2
-    Sequence:
-      - sequence_template_1
-      - sequence_template_2
-    Task:
-      - task_template_1
-      - task_template_2
+# link it alongside shotgunEventDaemon.py since it will be read in that context
+---
+# This is the name and key used to identify this plugin to Shotgrid.
+# Create one in Shotgrid via Admin->Scripts, Add Script
+# Name and Key must match or the plugin won't work
+SGHS_NAME: sghs
+SGHS_KEY: yoursecretkeyfullofrandomcharactersfromshotgrid
+# Set to true if you want to serialize and save events
+CAPTURE_LAST_EVENT: True
+LAST_EVENT_FILE: sghs_event.pickle
+# The location of the python directory from a shotgun pipeline toolkit tk-core folder
+SG_TOOLKIT: C:/shotgrid-hammerspace/tk-core/python
+# Comma-separated list of project ids that we want to process. Leave blank for all projects.
+SGHS_PROJECTS: 70
+# Tag prefix for filtering, only change if you have a namespace collision
+SGHS_TAG_NAMESPACE: SGHS_
+# Directory path default template name if you only have one shot template
+SGHS_PATH_TEMPLATE: shot_root
+SGHS_PATH_TEMPLATES:
+Shot:
+  - shot_template_1
+  - shot_template_2
+Sequence:
+  - sequence_template_1
+  - sequence_template_2
+Task:
+  - task_template_1
+  - task_template_2
 
 test:
   # A Hammerspace mount you can test on
@@ -39,3 +39,4 @@ test:
   TEST_KEYWORD: SGHS_TEST_KEYWORD
   # Path to the python directory in a shotgrid tk-core directory
   TK_CORE_PYTHON_PATH: C:/shotgrid-hammerspace/tk-core/python
+...
