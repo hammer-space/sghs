@@ -4,3 +4,4 @@
 __pycache__
 *.yml
 *.yaml
+/shothammer_test.pickle
