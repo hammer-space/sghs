@@ -4,8 +4,8 @@ import configparser
 
 from unittest import TestCase
 
-config = configparser.ConfigParser()
-config.read('shothammer_config.ini')
+with open('shothammer_config.yml') as F:
+    config = yaml.load(F, Loader=yaml.FullLoader)
 SGHS_NAME = config['shothammer']['SGHS_NAME']
 SGHS_KEY = config['shothammer']['SGHS_KEY']
 
