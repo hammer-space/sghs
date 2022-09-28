@@ -103,7 +103,7 @@ class TestShotHammerEventFilter(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerEventFilter, self).__init__(*args, **kwargs)
         self.project_filter = config['SGHS_PROJECTS']
-        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
+        with open('test/sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event = pickle.load(F)
         self.logger = logger
 
@@ -136,7 +136,7 @@ class TestShotHammerEventFilter(TestCase):
 class TestShotHammerEventProcessing(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerEventProcessing, self).__init__(*args, **kwargs)
-        with open('sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
+        with open('test/sghs_event_shot_tag_add_9583.pickle', 'rb') as F:
             self.event = pickle.load(F)
 
     def test_get_shot_code(self):
@@ -160,9 +160,9 @@ class TestShotHammerEventProcessing(TestCase):
 class TestShotHammerIntegration(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestShotHammerIntegration, self).__init__(*args, **kwargs)
-        with open('sghs_event_shot_tag_add_862.pickle', 'rb') as F:
+        with open('test/sghs_event_shot_tag_add_862.pickle', 'rb') as F:
             self.event_add_862 = pickle.load(F)
-        with open('sghs_event_shot_tag_remove_862.pickle', 'rb') as F2:
+        with open('test/sghs_event_shot_tag_remove_862.pickle', 'rb') as F2:
             self.event_remove_862 = pickle.load(F2)
         self.logger = logger
 
@@ -180,11 +180,11 @@ class TestShotHammerIntegration(TestCase):
 class TestMultipleObjectTypes(TestCase):
     def __init__(self, *args, **kwargs):
         super(TestMultipleObjectTypes, self).__init__(*args, **kwargs)
-        with open('sghs_event_shot.pickle', 'rb') as F:
+        with open('test/sghs_event_shot.pickle', 'rb') as F:
             self.sghs_event_shot = pickle.load(F)
-        with open('sghs_event_sequence.pickle', 'rb') as F2:
+        with open('test/sghs_event_sequence.pickle', 'rb') as F2:
             self.sghs_event_sequence = pickle.load(F2)
-        with open('sghs_event_task.pickle', 'rb') as F3:
+        with open('test/sghs_event_task.pickle', 'rb') as F3:
             self.sghs_event_task = pickle.load(F3)
         self.logger = logger
 

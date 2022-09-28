@@ -6,30 +6,32 @@
 # Name and Key must match or the plugin won't work
 SGHS_NAME: sghs
 SGHS_KEY: yoursecretkeyfullofrandomcharactersfromshotgrid
-# Set to true if you want to serialize and save events
+# Set to true and specify a filename if you want to serialize and save events
 CAPTURE_LAST_EVENT: True
 LAST_EVENT_FILE: sghs_event.pickle
 # The location of the python directory from a shotgun pipeline toolkit tk-core folder
 SG_TOOLKIT: C:/shotgrid-hammerspace/tk-core/python
-# Comma-separated list of project ids that we want to process. Leave blank for all projects.
-SGHS_PROJECTS: 70
+# List of project ids that we want to process. Use SGHS_PROJECTS: null for all projects.
+SGHS_PROJECTS:
+  - 70
 # Tag prefix for filtering, only change if you have a namespace collision
 SGHS_TAG_NAMESPACE: SGHS_
 # Directory path default template name if you only have one shot template
-SGHS_PATH_TEMPLATE: shot_root
 SGHS_PATH_TEMPLATES:
-Shot:
-  - shot_template_1
-  - shot_template_2
-Sequence:
-  - sequence_template_1
-  - sequence_template_2
-Task:
-  - task_template_1
-  - task_template_2
+    Shot:
+      - shot_template_1
+      - shot_template_2
+    Sequence:
+      - sequence_template_1
+      - sequence_template_2
+    Task:
+      - task_template_1
+      - task_template_2
 
+# This section is for configuring tests only. If you are not running tests you can remove this whole section.
+# Leaving this section here won't hurt anything.
 test:
-  # A Hammerspace mount you can test on
+  # A local Hammerspace mount you can test on
   HS_MOUNT: H:/
   TEST_FILE_NAME: testfile
   TEST_DIR_NAME: test_directory/

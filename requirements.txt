@@ -3,6 +3,7 @@ colorama==0.4.4
 hstk==4.6.3.5
 importlib-metadata==4.11.3
 pywin32==303
+PyYAML==6.0
 shotgun-api3==3.3.3
 six==1.16.0
 typing-extensions==4.1.1
